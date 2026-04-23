@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    container_name: flexoo-backend-app-dev
+    container_name: rpl-backend-app-dev
     volumes:
       - .:/app
     ports:
@@ -19,7 +19,7 @@ services:
 
   db-dev:
     image: postgres:17
-    container_name: flexoo-backend-db-dev
+    container_name: rpl-backend-db-dev
     env_file:
       - .env
     ports:

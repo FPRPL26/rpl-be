@@ -2,8 +2,8 @@ version: "3.9"
 
 services:
   app-prod:
-    image: ghcr.io/${GHCR_USERNAME}/flexoo-golang-template:latest
-    container_name: flexoo-backend-app-prod
+    image: ghcr.io/${GHCR_USERNAME}/rpl-golang-template:latest
+    container_name: rpl-backend-app-prod
     expose:
       - "8888"
     env_file:
@@ -18,7 +18,7 @@ services:
 
   db-prod:
     image: postgres:17
-    container_name: flexoo-backend-db-prod
+    container_name: rpl-backend-db-prod
     env_file:
       - .env.prod
     ports:
@@ -26,7 +26,7 @@ services:
     volumes:
       - pgdata_prod:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U flexoo-prod -d flexooDB-prod"]
+      test: ["CMD-SHELL", "pg_isready -U rpl-prod -d rplDB-prod"]
       interval: 10s
       timeout: 5s
       retries: 5

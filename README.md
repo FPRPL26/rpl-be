@@ -1,8 +1,8 @@
-# Flexoo Academy Golang Template
+# Golang Template
 
 ## About
 
-This is the standard backend template for Flexoo Academy projects, built with Golang. It includes setups for Docker, Database seeding, Migrations, and standard API structures.
+This is the standard backend template, built with Golang. It includes setups for Docker, Database seeding, Migrations, and standard API structures.
 
 ## Getting Started
 
@@ -75,7 +75,3 @@ make init-prod
 - `cmd/`: Application entrypoints
 - `internal/`: Private application code
 - `db/`: Database migrations and seeds
-
-## License
-
-Flexoo Academy
