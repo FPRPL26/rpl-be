@@ -6,16 +6,17 @@ services:
       context: .
       dockerfile: Dockerfile.dev
     container_name: rpl-backend-app-dev
+    command: ["air", "-c", ".air.linux.toml"]
     volumes:
       - .:/app
     ports:
-      - "8811:8811"
+      - "${APP_PORT:-8081}:${APP_PORT:-8080}"
     env_file:
       - .env
     depends_on:
       - db-dev
     networks:
-      - flexoo-app-dev-net
+      - rpl-app-dev-net
 
   db-dev:
     image: postgres:17
@@ -27,11 +28,11 @@ services:
     volumes:
       - pgdata_dev:/var/lib/postgresql/data
     networks:
-      - flexoo-app-dev-net
+      - rpl-app-dev-net
 
 volumes:
   pgdata_dev:
 
 networks:
-  flexoo-app-dev-net:
+  rpl-app-dev-net:
     driver: bridge

@@ -1,33 +1,19 @@
-# ========= Builder =========
-FROM golang:1.25-alpine AS builder
+# Use the official Golang image
+FROM golang:1.25-alpine AS development
 
+# Set the working directory
 WORKDIR /app
 
-# Copy dan download dependencies
+# Copy go.mod and go.sum to download dependencies
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Copy seluruh source code
+# Install air for live-reloading
+# The -b flag installs air in $GOPATH/bin, which is in the PATH
+RUN go install github.com/air-verse/air@latest
+
+# Copy the rest of the source code
 COPY . .
 
-RUN mkdir -p /app/assets/image
-RUN mkdir -p /app/assets/uploads
-
-RUN CGO_ENABLED=0 GOOS=linux go build -o main .
-
-# ========= Production =========
-FROM gcr.io/distroless/base-debian12
-
-WORKDIR /app
-
-# Copy hasil build dari builder
-COPY --from=builder /app/main .
-
-COPY --from=builder /app/assets/image ./assets/image
-
-COPY --from=builder /app/internal/pkg/email/template ./internal/pkg/email/template
-
-EXPOSE 8887
-
-# Jalankan binary
-CMD ["./main"]
+# Expose the port the app runs on
+EXPOSE 8080
