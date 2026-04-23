@@ -1,11 +1,11 @@
 package controller
 
 import (
-	"github.com/Flexoo-Academy/Golang-Template/internal/api/service"
-	"github.com/Flexoo-Academy/Golang-Template/internal/dto"
-	myerror "github.com/Flexoo-Academy/Golang-Template/internal/pkg/error"
-	"github.com/Flexoo-Academy/Golang-Template/internal/pkg/meta"
-	"github.com/Flexoo-Academy/Golang-Template/internal/pkg/response"
+	"github.com/FPRPL26/rpl-be/internal/api/service"
+	"github.com/FPRPL26/rpl-be/internal/dto"
+	myerror "github.com/FPRPL26/rpl-be/internal/pkg/error"
+	"github.com/FPRPL26/rpl-be/internal/pkg/meta"
+	"github.com/FPRPL26/rpl-be/internal/pkg/response"
 	"github.com/gin-gonic/gin"
 )
 

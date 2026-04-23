@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
-	"github.com/Flexoo-Academy/Golang-Template/cmd"
-	"github.com/Flexoo-Academy/Golang-Template/internal/config"
+	"github.com/FPRPL26/rpl-be/cmd"
+	"github.com/FPRPL26/rpl-be/internal/config"
 	"github.com/joho/godotenv"
 )
 
@@ -27,4 +27,3 @@ func main() {
 	RestApi := config.NewRest()
 	RestApi.Start()
 }
-

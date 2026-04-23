@@ -3,7 +3,7 @@ package meta
 import (
 	"strings"
 
-	"github.com/Flexoo-Academy/Golang-Template/internal/utils"
+	"github.com/FPRPL26/rpl-be/internal/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -165,4 +165,3 @@ func (m *Meta) SetSort(sort string) {
 func (m *Meta) SetSortBy(sortBy string) {
 	m.SortBy = sortBy
 }
-

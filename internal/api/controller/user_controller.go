@@ -1,6 +1,6 @@
 package controller
 
-import "github.com/Flexoo-Academy/Golang-Template/internal/api/service"
+import "github.com/FPRPL26/rpl-be/internal/api/service"
 
 type (
 	UserController interface {
@@ -93,4 +93,3 @@ func NewUser(userService service.UserService) UserController {
 
 // 	response.NewSuccess("success delete user", nil).Send(ctx)
 // }
-

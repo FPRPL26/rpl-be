@@ -9,11 +9,11 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/FPRPL26/rpl-be/internal/utils"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/Flexoo-Academy/Golang-Template/internal/utils"
 )
 
 type (
@@ -230,4 +230,3 @@ func (a *awsS3) Rollback() {
 
 	a.Commit()
 }
-

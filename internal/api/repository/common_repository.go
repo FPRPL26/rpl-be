@@ -7,8 +7,8 @@ import (
 	"reflect"
 	"strings"
 
-	mylog "github.com/Flexoo-Academy/Golang-Template/internal/pkg/logger"
-	"github.com/Flexoo-Academy/Golang-Template/internal/pkg/meta"
+	mylog "github.com/FPRPL26/rpl-be/internal/pkg/logger"
+	"github.com/FPRPL26/rpl-be/internal/pkg/meta"
 	"gorm.io/gorm"
 )
 
@@ -217,4 +217,3 @@ func addEmbeddedFields(embedType reflect.Type, ms *MetaService, tablePrefix stri
 		}
 	}
 }
-

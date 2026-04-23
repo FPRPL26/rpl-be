@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"github.com/Flexoo-Academy/Golang-Template/internal/api/controller"
-	"github.com/Flexoo-Academy/Golang-Template/internal/middleware"
+	"github.com/FPRPL26/rpl-be/internal/api/controller"
+	"github.com/FPRPL26/rpl-be/internal/middleware"
 	"github.com/gin-gonic/gin"
 )
 

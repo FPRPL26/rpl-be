@@ -3,8 +3,8 @@ package migrations
 import (
 	"fmt"
 
-	"github.com/Flexoo-Academy/Golang-Template/internal/entity"
-	mylog "github.com/Flexoo-Academy/Golang-Template/internal/pkg/logger"
+	"github.com/FPRPL26/rpl-be/internal/entity"
+	mylog "github.com/FPRPL26/rpl-be/internal/pkg/logger"
 	"gorm.io/gorm"
 )
 

@@ -7,10 +7,10 @@ import (
 	"os/exec"
 	"runtime"
 
-	"github.com/Flexoo-Academy/Golang-Template/db"
-	"github.com/Flexoo-Academy/Golang-Template/db/migrations"
-	seeders "github.com/Flexoo-Academy/Golang-Template/db/seeder"
-	mylog "github.com/Flexoo-Academy/Golang-Template/internal/pkg/logger"
+	"github.com/FPRPL26/rpl-be/db"
+	"github.com/FPRPL26/rpl-be/db/migrations"
+	seeders "github.com/FPRPL26/rpl-be/db/seeder"
+	mylog "github.com/FPRPL26/rpl-be/internal/pkg/logger"
 	"gorm.io/gorm"
 )
 
@@ -92,4 +92,3 @@ func runWatch() error {
 	mylog.Infoln("Command executed successfully")
 	return nil
 }
-

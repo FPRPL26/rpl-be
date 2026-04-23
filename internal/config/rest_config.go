@@ -6,12 +6,12 @@ import (
 	"log"
 	"os"
 
-	"github.com/Flexoo-Academy/Golang-Template/db"
-	"github.com/Flexoo-Academy/Golang-Template/internal/api/controller"
-	"github.com/Flexoo-Academy/Golang-Template/internal/api/repository"
-	"github.com/Flexoo-Academy/Golang-Template/internal/api/routes"
-	"github.com/Flexoo-Academy/Golang-Template/internal/api/service"
-	"github.com/Flexoo-Academy/Golang-Template/internal/middleware"
+	"github.com/FPRPL26/rpl-be/db"
+	"github.com/FPRPL26/rpl-be/internal/api/controller"
+	"github.com/FPRPL26/rpl-be/internal/api/repository"
+	"github.com/FPRPL26/rpl-be/internal/api/routes"
+	"github.com/FPRPL26/rpl-be/internal/api/service"
+	"github.com/FPRPL26/rpl-be/internal/middleware"
 	"github.com/gin-gonic/gin"
 )
 

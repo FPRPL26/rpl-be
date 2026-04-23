@@ -1,7 +1,7 @@
 package service
 
 import (
-	"github.com/Flexoo-Academy/Golang-Template/internal/api/repository"
+	"github.com/FPRPL26/rpl-be/internal/api/repository"
 	"gorm.io/gorm"
 )
 
@@ -23,4 +23,3 @@ func NewUser(userRepository repository.UserRepository,
 		db:             db,
 	}
 }
-

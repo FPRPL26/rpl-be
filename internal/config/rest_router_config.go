@@ -7,10 +7,10 @@ import (
 	"os"
 	"runtime/debug"
 
-	"github.com/Flexoo-Academy/Golang-Template/internal/middleware"
-	mylog "github.com/Flexoo-Academy/Golang-Template/internal/pkg/logger"
-	"github.com/Flexoo-Academy/Golang-Template/internal/pkg/response"
-	"github.com/Flexoo-Academy/Golang-Template/internal/utils"
+	"github.com/FPRPL26/rpl-be/internal/middleware"
+	mylog "github.com/FPRPL26/rpl-be/internal/pkg/logger"
+	"github.com/FPRPL26/rpl-be/internal/pkg/response"
+	"github.com/FPRPL26/rpl-be/internal/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/oklog/ulid/v2"
 )
@@ -81,4 +81,3 @@ func customRecovery() gin.HandlerFunc {
 		ctx.Next()
 	}
 }
-

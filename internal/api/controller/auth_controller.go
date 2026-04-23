@@ -1,12 +1,12 @@
 package controller
 
 import (
-	"github.com/Flexoo-Academy/Golang-Template/internal/api/service"
-	"github.com/Flexoo-Academy/Golang-Template/internal/dto"
-	myerror "github.com/Flexoo-Academy/Golang-Template/internal/pkg/error"
-	myjwt "github.com/Flexoo-Academy/Golang-Template/internal/pkg/jwt"
-	"github.com/Flexoo-Academy/Golang-Template/internal/pkg/response"
-	"github.com/Flexoo-Academy/Golang-Template/internal/utils"
+	"github.com/FPRPL26/rpl-be/internal/api/service"
+	"github.com/FPRPL26/rpl-be/internal/dto"
+	myerror "github.com/FPRPL26/rpl-be/internal/pkg/error"
+	myjwt "github.com/FPRPL26/rpl-be/internal/pkg/jwt"
+	"github.com/FPRPL26/rpl-be/internal/pkg/response"
+	"github.com/FPRPL26/rpl-be/internal/utils"
 	"github.com/gin-gonic/gin"
 )
 

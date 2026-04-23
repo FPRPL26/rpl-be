@@ -3,10 +3,10 @@ package service
 import (
 	"context"
 
-	"github.com/Flexoo-Academy/Golang-Template/internal/api/repository"
-	"github.com/Flexoo-Academy/Golang-Template/internal/dto"
-	"github.com/Flexoo-Academy/Golang-Template/internal/entity"
-	"github.com/Flexoo-Academy/Golang-Template/internal/pkg/meta"
+	"github.com/FPRPL26/rpl-be/internal/api/repository"
+	"github.com/FPRPL26/rpl-be/internal/dto"
+	"github.com/FPRPL26/rpl-be/internal/entity"
+	"github.com/FPRPL26/rpl-be/internal/pkg/meta"
 )
 
 type (

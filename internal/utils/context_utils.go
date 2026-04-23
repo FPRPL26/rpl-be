@@ -3,7 +3,7 @@ package utils
 import (
 	"net/http"
 
-	myerror "github.com/Flexoo-Academy/Golang-Template/internal/pkg/error"
+	myerror "github.com/FPRPL26/rpl-be/internal/pkg/error"
 	"github.com/gin-gonic/gin"
 )
 
@@ -20,4 +20,3 @@ func GetUserIdFromCtx(ctx *gin.Context) (string, error) {
 
 	return userId, nil
 }
-
