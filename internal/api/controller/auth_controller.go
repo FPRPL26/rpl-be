@@ -15,6 +15,7 @@ type (
 		Login(ctx *gin.Context)
 		Register(ctx *gin.Context)
 		VerifyEmail(ctx *gin.Context)
+		SendEmailVerification(ctx *gin.Context)
 		RefreshToken(ctx *gin.Context)
 		Logout(ctx *gin.Context)
 		ForgetPassword(ctx *gin.Context)
@@ -81,6 +82,22 @@ func (c *authController) VerifyEmail(ctx *gin.Context) {
 	response.NewSuccess("success verify email", nil).Send(ctx)
 }
 
+func (c *authController) SendEmailVerification(ctx *gin.Context) {
+	var req dto.SendEmailVerificationRequest
+	if err := ctx.ShouldBind(&req); err != nil {
+		err = myerror.GetErrBodyRequest(err, dto.SendEmailVerificationRequest{})
+		response.NewFailed("failed get data from body", err).Send(ctx)
+		return
+	}
+
+	if err := c.authService.SendEmailVerification(ctx.Request.Context(), req.Email); err != nil {
+		response.NewFailed("failed send email verification", err).Send(ctx)
+		return
+	}
+
+	response.NewSuccess("success send email verification", nil).Send(ctx)
+}
+
 func (c *authController) RefreshToken(ctx *gin.Context) {
 	token := ctx.Query("token")
 	result, err := c.authService.RefreshToken(ctx.Request.Context(), token)
@@ -127,15 +144,9 @@ func (c *authController) ForgetPassword(ctx *gin.Context) {
 
 func (c *authController) ChangePassword(ctx *gin.Context) {
 	var req dto.ChangePasswordRequest
-	if err := ctx.ShouldBind(&req); err != nil {
-		err = myerror.GetErrBodyRequest(err, dto.ChangePasswordRequest{})
-		response.NewFailed("failed get data from body", err).Send(ctx)
-		return
-	}
-
 	token := ctx.Query("token")
 	if token == "" {
-		response.NewFailed("failed change password", myerror.ErrBodyRequest).Send(ctx)
+		response.NewFailed("invalid token", myerror.ErrBodyRequest).Send(ctx)
 		return
 	}
 
@@ -146,6 +157,13 @@ func (c *authController) ChangePassword(ctx *gin.Context) {
 	}
 
 	req.Email = claims["email"]
+
+	if err := ctx.ShouldBind(&req); err != nil {
+		err = myerror.GetErrBodyRequest(err, dto.ChangePasswordRequest{})
+		response.NewFailed("failed get data from body", err).Send(ctx)
+		return
+	}
+
 	if err := c.authService.ChangePassword(ctx, req); err != nil {
 		response.NewFailed("failed change password", err).Send(ctx)
 		return

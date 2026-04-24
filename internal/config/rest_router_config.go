@@ -32,7 +32,7 @@ func NewRouter(server *gin.Engine) *gin.Engine {
 			"message": "pong 123",
 		})
 	})
-	server.POST("/api/v1/uploads", func(ctx *gin.Context) {
+	server.POST("/api/uploads", func(ctx *gin.Context) {
 		file, err := ctx.FormFile("file")
 		if err != nil {
 			response.NewFailed("failed to get file", err).SendWithAbort(ctx)

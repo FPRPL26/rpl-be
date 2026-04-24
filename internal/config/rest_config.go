@@ -12,6 +12,7 @@ import (
 	"github.com/FPRPL26/rpl-be/internal/api/routes"
 	"github.com/FPRPL26/rpl-be/internal/api/service"
 	"github.com/FPRPL26/rpl-be/internal/middleware"
+	mailer "github.com/FPRPL26/rpl-be/internal/pkg/email"
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,28 +28,28 @@ func NewRest() RestConfig {
 
 	var (
 		//=========== (PACKAGE) ===========//
-		// mailerService mailer.Mailer = mailer.New()
+		mailerService mailer.Mailer = mailer.New()
 		// oauthService  oauth.Oauth   = oauth.New()
 		// awsS3Service  storage.AwsS3 = storage.NewAwsS3()
 
 		//=========== (REPOSITORY) ===========//
-		// userRepository         repository.UserRepository         = repository.NewUser(db)
-		// refreshTokenRepository repository.RefreshTokenRepository = repository.NewRefreshTokenRepository(db)
-		taskRepository repository.TaskRepository = repository.NewTask(db)
+		userRepository         repository.UserRepository         = repository.NewUser(db)
+		refreshTokenRepository repository.RefreshTokenRepository = repository.NewRefreshTokenRepository(db)
+		taskRepository         repository.TaskRepository         = repository.NewTask(db)
 
 		//=========== (SERVICE) ===========//
-		// authService service.AuthService = service.NewAuth(userRepository, refreshTokenRepository, mailerService, db)
+		authService service.AuthService = service.NewAuth(userRepository, refreshTokenRepository, mailerService, db)
 		taskService service.TaskService = service.NewTask(taskRepository)
 		// userService                   service.UserService                   = service.NewUser(userRepository, userDisciplineRepository, disciplineGroupConsolidatorRepository, disciplineListDocumentConsolidatorRepository, packageRepository, db)
 
 		//=========== (CONTROLLER) ===========//
-		// authController controller.AuthController = controller.NewAuth(authService)
+		authController controller.AuthController = controller.NewAuth(authService)
 		taskController controller.TaskController = controller.NewTask(taskService)
 		// userController                   controller.UserController                   = controller.NewUser(userService)
 	)
 
 	// Register all routes
-	// routes.Auth(server, authController, middleware)
+	routes.Auth(server, authController, middleware)
 	routes.Task(server, taskController, middleware)
 
 	return RestConfig{

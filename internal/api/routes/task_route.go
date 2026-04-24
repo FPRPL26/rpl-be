@@ -7,7 +7,7 @@ import (
 )
 
 func Task(app *gin.Engine, taskcontroller controller.TaskController, middleware middleware.Middleware) {
-	routes := app.Group("/api/v1/task")
+	routes := app.Group("/api/task")
 	{
 		routes.POST("", taskcontroller.Create)
 		routes.GET("", taskcontroller.GetAll)

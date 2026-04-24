@@ -44,6 +44,10 @@ type (
 		Email string `json:"email" binding:"required,email"`
 	}
 
+	SendEmailVerificationRequest struct {
+		Email string `json:"email" binding:"required,email"`
+	}
+
 	ChangePasswordRequest struct {
 		Email       string
 		NewPassword string `json:"new_password" binding:"required"`

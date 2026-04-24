@@ -24,6 +24,7 @@ type (
 	AuthService interface {
 		Login(ctx context.Context, req dto.LoginRequest) (dto.LoginResponse, error)
 		Register(ctx context.Context, req dto.RegisterRequest) (dto.UserResponse, error)
+		SendEmailVerification(ctx context.Context, email string) error
 		VerifyEmail(ctx context.Context, token string) error
 		RefreshToken(ctx context.Context, refreshToken string) (dto.LoginResponse, error)
 		Logout(ctx context.Context, req dto.LogoutRequest) error
@@ -141,22 +142,8 @@ func (s *authService) Register(ctx context.Context, req dto.RegisterRequest) (dt
 		return dto.UserResponse{}, err
 	}
 
-	// Generate verification token
-	token, err := myjwt.GenerateToken(map[string]string{
-		"user_id": newUser.ID.String(),
-		"email":   newUser.Email,
-		"type":    "verification",
-	}, 24*time.Hour)
-	if err != nil {
-		return dto.UserResponse{}, err
-	}
-
 	// Send verification email
-	verifyLink := fmt.Sprintf("%s/verify-email/%s", os.Getenv("APP_URL"), token)
-	if err := s.mailService.MakeMail("./internal/pkg/email/template/verification_email.html", map[string]any{
-		"Name":   newUser.Name,
-		"Verify": verifyLink,
-	}).Send(newUser.Email, "Verify Your Account").Error; err != nil {
+	if err := s.SendEmailVerification(ctx, newUser.Email); err != nil {
 		return dto.UserResponse{}, err
 	}
 
@@ -166,6 +153,34 @@ func (s *authService) Register(ctx context.Context, req dto.RegisterRequest) (dt
 		Email: newUser.Email,
 		Role:  string(newUser.Role),
 	}, nil
+}
+
+func (s *authService) SendEmailVerification(ctx context.Context, email string) error {
+	user, err := s.userRepository.GetByEmail(ctx, nil, email)
+	if err != nil {
+		return err
+	}
+
+	// Generate verification token
+	token, err := myjwt.GenerateToken(map[string]string{
+		"user_id": user.ID.String(),
+		"email":   user.Email,
+		"type":    "verification",
+	}, 24*time.Hour)
+	if err != nil {
+		return err
+	}
+
+	// Send verification email
+	verifyLink := fmt.Sprintf("%s/verify-email/%s", os.Getenv("APP_URL"), token)
+	if err := s.mailService.MakeMail("./internal/pkg/email/template/verification_email.html", map[string]any{
+		"Name":   user.Name,
+		"Verify": verifyLink,
+	}).Send(user.Email, "Verify Your Account").Error; err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *authService) VerifyEmail(ctx context.Context, token string) error {
