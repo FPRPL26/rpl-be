@@ -5,10 +5,10 @@ ENVIRONMENT ?= dev
 CONTAINER_NAME=${APP_NAME}-app-${ENVIRONMENT}
 POSTGRES_CONTAINER_NAME=${APP_NAME}-db-${ENVIRONMENT}
 
-dep: 
+dep:
 	go mod tidy
 
-run: 
+run:
 	go run main.go
 
 watch:
@@ -26,11 +26,11 @@ both:
 init-dev:
 	docker-compose -f docker-compose.dev.yml up --build -d
 
-up-dev: 
+up-dev:
 	docker-compose -f docker-compose.dev.yml up -d
 
 down-dev-volume:
-	docker-compose -f docker-compose.dev.yml down -v 
+	docker-compose -f docker-compose.dev.yml down -v
 
 down-dev:
 	docker-compose -f docker-compose.dev.yml down
@@ -43,7 +43,7 @@ up-prod:
 	docker-compose -f docker-compose.prod.yml up -d
 
 down-prod-volume:
-	docker-compose -f docker-compose.prod.yml down -v 
+	docker-compose -f docker-compose.prod.yml down -v
 
 down-prod:
 	docker-compose -f docker-compose.prod.yml down
@@ -59,18 +59,18 @@ build-prod:
 
 rebuild-prod: down-prod init-prod
 
-rebuild-dev: 
+rebuild-dev:
 	docker-compose -f docker-compose.dev.yml down
 	docker-compose -f docker-compose.dev.yml up -d
 
 migrate-docker:
-	docker exec -it flexoo-backend-app-dev go run main.go --migrate
+	docker exec -it rpl-backend-app-dev go run main.go --migrate
 
 seeder-docker:
-	docker exec -it flexoo-backend-app-dev go run main.go --seeder
+	docker exec -it rpl-backend-app-dev go run main.go --seeder
 
 both-docker:
-	docker exec -it flexoo-backend-app-dev go run main.go --migrate --seeder
+	docker exec -it rpl-backend-app-dev go run main.go --migrate --seeder
 
 help:
 	@echo "Usage: make [target]"

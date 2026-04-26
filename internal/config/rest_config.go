@@ -12,6 +12,7 @@ import (
 	"github.com/FPRPL26/rpl-be/internal/api/routes"
 	"github.com/FPRPL26/rpl-be/internal/api/service"
 	"github.com/FPRPL26/rpl-be/internal/middleware"
+	"github.com/FPRPL26/rpl-be/internal/pkg/cron"
 	mailer "github.com/FPRPL26/rpl-be/internal/pkg/email"
 	"github.com/gin-gonic/gin"
 )
@@ -23,8 +24,10 @@ type RestConfig struct {
 func NewRest() RestConfig {
 	db := db.New()
 	app := gin.Default()
-	server := NewRouter(app)
+	server := NewRouter(app, db)
 	middleware := middleware.New(db)
+
+	cron.StartMediaCron(db)
 
 	var (
 		//=========== (PACKAGE) ===========//

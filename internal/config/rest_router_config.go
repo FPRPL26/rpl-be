@@ -7,15 +7,17 @@ import (
 	"os"
 	"runtime/debug"
 
+	"github.com/FPRPL26/rpl-be/internal/entity"
 	"github.com/FPRPL26/rpl-be/internal/middleware"
 	mylog "github.com/FPRPL26/rpl-be/internal/pkg/logger"
 	"github.com/FPRPL26/rpl-be/internal/pkg/response"
 	"github.com/FPRPL26/rpl-be/internal/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/oklog/ulid/v2"
+	"gorm.io/gorm"
 )
 
-func NewRouter(server *gin.Engine) *gin.Engine {
+func NewRouter(server *gin.Engine, db *gorm.DB) *gin.Engine {
 	server.NoRoute(func(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"status":  http.StatusNotFound,
@@ -47,7 +49,18 @@ func NewRouter(server *gin.Engine) *gin.Engine {
 
 		fileURL := fmt.Sprintf("%s/api/static/%s", ctx.Request.Host, filename)
 
+		media := entity.MediaAsset{
+			URL:    fileURL,
+			IsUsed: false,
+		}
+
+		if err := db.Create(&media).Error; err != nil {
+			response.NewFailed("failed to save media asset to database", err).SendWithAbort(ctx)
+			return
+		}
+
 		response.NewSuccess("success upload image", gin.H{
+			"id":   media.ID,
 			"url":  fileURL,
 			"path": filename,
 		}).Send(ctx)
