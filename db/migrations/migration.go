@@ -37,6 +37,18 @@ func Migrate(db *gorm.DB) error {
 		return err
 	}
 
+	// Add manual foreign key for TutorProfile where ID is also the UserID
+	if err := db.Exec(`
+		DO $$
+		BEGIN
+			IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'fk_tutor_profile_user') THEN
+				ALTER TABLE tutor_profile ADD CONSTRAINT fk_tutor_profile_user FOREIGN KEY (id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE;
+			END IF;
+		END $$;
+	`).Error; err != nil {
+		return err
+	}
+
 	// if err := db.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email) WHERE deleted_at IS NULL;`).Error; err != nil {
 	// 	return err
 	// }
