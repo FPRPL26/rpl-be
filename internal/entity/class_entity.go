@@ -9,6 +9,7 @@ type Class struct {
 	Description  string    `json:"description" gorm:"not null"`
 	ThumbnailURL string    `json:"thumbnail_url" gorm:"not null"`
 	ChatWA       *string   `json:"chat_wa" gorm:""`
+	Timestamp
 
 	TutorProfile TutorProfile `json:"tutor_profile" gorm:"foreignKey:TutorID"`
 }

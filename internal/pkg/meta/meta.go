@@ -19,6 +19,15 @@ type Meta struct {
 	FilterBy  string `json:"filter_by,omitempty"`
 }
 
+func Default() Meta {
+	return Meta{
+		Take:   10000000,
+		Page:   1,
+		Sort:   "asc",
+		SortBy: "id",
+	}
+}
+
 // New creates and initializes a Meta object with default pagination settings.
 // Default values are:
 // - Take: 10 (number of items per page)
@@ -27,12 +36,7 @@ type Meta struct {
 // - SortBy: "created_by" (column used for sorting)
 // Additional options can be applied to customize the Meta object.
 func New(ctx *gin.Context) Meta {
-	meta := Meta{
-		Take:   10000000,
-		Page:   0,
-		Sort:   "asc",
-		SortBy: "id",
-	}
+	meta := Default()
 
 	page := ctx.Query("page")
 	take := ctx.Query("take")

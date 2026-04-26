@@ -39,21 +39,26 @@ func NewRest() RestConfig {
 		userRepository         repository.UserRepository         = repository.NewUser(db)
 		refreshTokenRepository repository.RefreshTokenRepository = repository.NewRefreshTokenRepository(db)
 		taskRepository         repository.TaskRepository         = repository.NewTask(db)
+		classRepository        repository.ClassRepository        = repository.NewClassRepository(db)
+		scheduleRepository     repository.ScheduleRepository     = repository.NewScheduleRepository(db)
 
 		//=========== (SERVICE) ===========//
 		authService service.AuthService = service.NewAuth(userRepository, refreshTokenRepository, mailerService, db)
 		taskService service.TaskService = service.NewTask(taskRepository)
+		classService service.ClassService = service.NewClass(classRepository, scheduleRepository)
 		// userService                   service.UserService                   = service.NewUser(userRepository, userDisciplineRepository, disciplineGroupConsolidatorRepository, disciplineListDocumentConsolidatorRepository, packageRepository, db)
 
 		//=========== (CONTROLLER) ===========//
 		authController controller.AuthController = controller.NewAuth(authService)
 		taskController controller.TaskController = controller.NewTask(taskService)
+		classController controller.ClassController = controller.NewClass(classService)
 		// userController                   controller.UserController                   = controller.NewUser(userService)
 	)
 
 	// Register all routes
 	routes.Auth(server, authController, middleware)
 	routes.Task(server, taskController, middleware)
+	routes.Class(server, classController, middleware)
 
 	return RestConfig{
 		server: server,
