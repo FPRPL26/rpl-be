@@ -1,0 +1,11 @@
+[
+  {
+    "id": "2d07435b-75df-4784-a08d-dd241fb8c78f",
+    "name": "user",
+    "profile_picture_url": "https://example.com/profile.jpg",
+    "semester": 4,
+    "jurusan": 1,
+    "rating": 4.5,
+    "is_verified": true
+  }
+]
