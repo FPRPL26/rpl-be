@@ -9,7 +9,7 @@ type Portofolio struct {
 	FileURL        string    `json:"file_url" gorm:"not null"`
 	TutorProfileID uuid.UUID `json:"tutor_profile_id" gorm:"type:uuid;not null"`
 
-	TutorProfile TutorProfile `json:"tutor_profile" gorm:"foreignKey:TutorProfileID;references:PortofolioID"`
+	TutorProfile TutorProfile `json:"tutor_profile" gorm:"foreignKey:TutorProfileID;references:ID"`
 }
 
 func (p *Portofolio) TableName() string {
