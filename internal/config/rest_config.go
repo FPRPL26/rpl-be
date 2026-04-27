@@ -41,17 +41,20 @@ func NewRest() RestConfig {
 		taskRepository         repository.TaskRepository         = repository.NewTask(db)
 		classRepository        repository.ClassRepository        = repository.NewClassRepository(db)
 		scheduleRepository     repository.ScheduleRepository     = repository.NewScheduleRepository(db)
+		tutorProfileRepository repository.TutorProfileRepository = repository.NewTutorProfileRepository(db)
 
 		//=========== (SERVICE) ===========//
-		authService service.AuthService = service.NewAuth(userRepository, refreshTokenRepository, mailerService, db)
-		taskService service.TaskService = service.NewTask(taskRepository)
-		classService service.ClassService = service.NewClass(classRepository, scheduleRepository)
+		authService         service.AuthService  = service.NewAuth(userRepository, refreshTokenRepository, mailerService, db)
+		taskService         service.TaskService  = service.NewTask(taskRepository)
+		classService        service.ClassService = service.NewClass(classRepository, scheduleRepository)
+		tutorProfileService service.TutorService = service.NewTutorService(tutorProfileRepository)
 		// userService                   service.UserService                   = service.NewUser(userRepository, userDisciplineRepository, disciplineGroupConsolidatorRepository, disciplineListDocumentConsolidatorRepository, packageRepository, db)
 
 		//=========== (CONTROLLER) ===========//
-		authController controller.AuthController = controller.NewAuth(authService)
-		taskController controller.TaskController = controller.NewTask(taskService)
-		classController controller.ClassController = controller.NewClass(classService)
+		authController         controller.AuthController  = controller.NewAuth(authService)
+		taskController         controller.TaskController  = controller.NewTask(taskService)
+		classController        controller.ClassController = controller.NewClass(classService)
+		tutorProfileController controller.TutorController = controller.NewTutorController(tutorProfileService)
 		// userController                   controller.UserController                   = controller.NewUser(userService)
 	)
 
@@ -59,6 +62,7 @@ func NewRest() RestConfig {
 	routes.Auth(server, authController, middleware)
 	routes.Task(server, taskController, middleware)
 	routes.Class(server, classController, middleware)
+	routes.Tutor(server, tutorProfileController, middleware)
 
 	return RestConfig{
 		server: server,
