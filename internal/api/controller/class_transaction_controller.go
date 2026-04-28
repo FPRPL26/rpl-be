@@ -3,6 +3,7 @@ package controller
 import (
 	"github.com/FPRPL26/rpl-be/internal/api/service"
 	"github.com/FPRPL26/rpl-be/internal/dto"
+	"github.com/FPRPL26/rpl-be/internal/pkg/meta"
 	"github.com/FPRPL26/rpl-be/internal/pkg/response"
 	"github.com/FPRPL26/rpl-be/internal/utils"
 	"github.com/gin-gonic/gin"
@@ -11,6 +12,7 @@ import (
 type (
 	ClassTransactionController interface {
 		Checkout(ctx *gin.Context)
+		GetAll(ctx *gin.Context)
 		Complete(ctx *gin.Context)
 		MidtransCallback(ctx *gin.Context)
 	}
@@ -44,6 +46,22 @@ func (c *classTransactionController) Checkout(ctx *gin.Context) {
 	}
 
 	response.NewSuccess("Transaction created successfully", res).Send(ctx)
+}
+
+func (c *classTransactionController) GetAll(ctx *gin.Context) {
+	userID, err := utils.GetUserIdFromCtx(ctx)
+	if err != nil {
+		response.NewFailed("failed to get user id from context", err).Send(ctx)
+		return
+	}
+
+	res, metaRes, err := c.transactionService.GetAllByUserId(ctx.Request.Context(), userID, meta.New(ctx))
+	if err != nil {
+		response.NewFailed("failed to get transactions", err).Send(ctx)
+		return
+	}
+
+	response.NewSuccess("Transactions retrieved successfully", res, metaRes).Send(ctx)
 }
 
 func (c *classTransactionController) Complete(ctx *gin.Context) {

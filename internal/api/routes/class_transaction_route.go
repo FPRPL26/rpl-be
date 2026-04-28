@@ -12,7 +12,9 @@ func ClassTransaction(app *gin.Engine, classTransactionController controller.Cla
 
 	routes := app.Group("/api/transactions/classes")
 	{
-		routes.POST("", middleware.Authenticate(), classTransactionController.Checkout)
-		routes.POST("/:transaction_id/complete", middleware.Authenticate(), classTransactionController.Complete)
+		routes.Use(middleware.Authenticate())
+		routes.POST("", classTransactionController.Checkout)
+		routes.GET("", classTransactionController.GetAll)
+		routes.POST("/:transaction_id/complete", classTransactionController.Complete)
 	}
 }

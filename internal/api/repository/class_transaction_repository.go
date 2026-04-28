@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/FPRPL26/rpl-be/internal/entity"
+	"github.com/FPRPL26/rpl-be/internal/pkg/meta"
 	"gorm.io/gorm"
 )
 
@@ -12,6 +13,7 @@ type (
 		Create(ctx context.Context, tx *gorm.DB, transaction entity.ClassTransaction) (entity.ClassTransaction, error)
 		GetById(ctx context.Context, tx *gorm.DB, id string, preloads ...string) (entity.ClassTransaction, error)
 		GetByUserAndSchedule(ctx context.Context, tx *gorm.DB, userID, scheduleID string) (entity.ClassTransaction, error)
+		GetAllByUserId(ctx context.Context, tx *gorm.DB, userID string, metaReq meta.Meta, preloads ...string) ([]entity.ClassTransaction, meta.Meta, error)
 		Update(ctx context.Context, tx *gorm.DB, transaction entity.ClassTransaction) (entity.ClassTransaction, error)
 	}
 
@@ -64,6 +66,26 @@ func (r *classTransactionRepository) GetByUserAndSchedule(ctx context.Context, t
 	}
 
 	return transaction, nil
+}
+
+func (r *classTransactionRepository) GetAllByUserId(ctx context.Context, tx *gorm.DB, userID string, metaReq meta.Meta, preloads ...string) ([]entity.ClassTransaction, meta.Meta, error) {
+	if tx == nil {
+		tx = r.db
+	}
+
+	for _, preload := range preloads {
+		tx = tx.Preload(preload)
+	}
+
+	var transactions []entity.ClassTransaction
+	tx = tx.WithContext(ctx).Model(entity.ClassTransaction{}).Where("user_id = ?", userID)
+
+	if err := WithFilters(tx, &metaReq,
+		AddModels(entity.ClassTransaction{})).Find(&transactions).Error; err != nil {
+		return nil, metaReq, err
+	}
+
+	return transactions, metaReq, nil
 }
 
 func (r *classTransactionRepository) Update(ctx context.Context, tx *gorm.DB, transaction entity.ClassTransaction) (entity.ClassTransaction, error) {

@@ -10,6 +10,7 @@ import (
 	"github.com/FPRPL26/rpl-be/internal/dto"
 	"github.com/FPRPL26/rpl-be/internal/entity"
 	myerror "github.com/FPRPL26/rpl-be/internal/pkg/error"
+	"github.com/FPRPL26/rpl-be/internal/pkg/meta"
 	"github.com/FPRPL26/rpl-be/internal/pkg/midtrans"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -18,6 +19,7 @@ import (
 type (
 	ClassTransactionService interface {
 		Checkout(ctx context.Context, userID string, req dto.CheckoutClassRequest) (dto.ClassTransactionResponse, error)
+		GetAllByUserId(ctx context.Context, userID string, metaReq meta.Meta) ([]dto.ClassTransactionListResponse, meta.Meta, error)
 		Complete(ctx context.Context, transactionID string) error
 		HandleMidtransCallback(ctx context.Context, payload map[string]interface{}) error
 	}
@@ -129,6 +131,28 @@ func (s *classTransactionService) Checkout(ctx context.Context, userID string, r
 	}
 
 	return transactionResult, nil
+}
+
+func (s *classTransactionService) GetAllByUserId(ctx context.Context, userID string, metaReq meta.Meta) ([]dto.ClassTransactionListResponse, meta.Meta, error) {
+	transactions, metaRes, err := s.transactionRepo.GetAllByUserId(ctx, nil, userID, metaReq, "Class")
+	if err != nil {
+		return nil, metaRes, err
+	}
+
+	res := make([]dto.ClassTransactionListResponse, 0, len(transactions))
+	for _, t := range transactions {
+		res = append(res, dto.ClassTransactionListResponse{
+			ID:         t.ID,
+			ClassID:    t.ClassID,
+			ClassName:  t.Class.Name,
+			ScheduleID: t.ScheduleID,
+			TotalPrice: t.TotalPrice,
+			Status:     string(t.Status),
+			CreatedAt:  t.CreatedAt.Format(time.RFC3339),
+		})
+	}
+
+	return res, metaRes, nil
 }
 
 func (s *classTransactionService) Complete(ctx context.Context, transactionID string) error {
