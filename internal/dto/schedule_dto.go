@@ -27,5 +27,6 @@ type ScheduleResponse struct {
 	EndTime    string `json:"end_time"`
 	Date       string `json:"date"`
 	MaxStudent int64  `json:"max_student"`
+	Remaining  int64  `json:"remaining"`
 	Repeted    int    `json:"repeted"`
 }
