@@ -40,7 +40,18 @@ func (c *tutorController) Create(ctx *gin.Context) {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
-	userID := val.(uuid.UUID)
+
+	userIDStr, ok := val.(string)
+	if !ok {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user_id type in context"})
+		return
+	}
+
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid user_id format"})
+		return
+	}
 
 	res, err := c.service.CreateTutor(ctx.Request.Context(), userID, req)
 	if err != nil {
