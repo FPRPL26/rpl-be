@@ -18,7 +18,10 @@ require (
 	gorm.io/gorm v1.26.1
 )
 
-require github.com/stretchr/testify v1.11.1 // indirect
+require (
+	github.com/midtrans/midtrans-go v1.3.8 // indirect
+	github.com/stretchr/testify v1.11.1 // indirect
+)
 
 require (
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.11 // indirect

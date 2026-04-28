@@ -14,6 +14,7 @@ import (
 	"github.com/FPRPL26/rpl-be/internal/middleware"
 	"github.com/FPRPL26/rpl-be/internal/pkg/cron"
 	mailer "github.com/FPRPL26/rpl-be/internal/pkg/email"
+	"github.com/FPRPL26/rpl-be/internal/pkg/midtrans"
 	"github.com/gin-gonic/gin"
 )
 
@@ -31,7 +32,8 @@ func NewRest() RestConfig {
 
 	var (
 		//=========== (PACKAGE) ===========//
-		mailerService mailer.Mailer = mailer.New()
+		mailerService   mailer.Mailer            = mailer.New()
+		midtransService midtrans.MidtransService = midtrans.NewMidtransService()
 		// oauthService  oauth.Oauth   = oauth.New()
 		// awsS3Service  storage.AwsS3 = storage.NewAwsS3()
 
@@ -49,7 +51,7 @@ func NewRest() RestConfig {
 		taskService         service.TaskService             = service.NewTask(taskRepository)
 		classService        service.ClassService            = service.NewClass(classRepository, scheduleRepository)
 		tutorProfileService service.TutorService            = service.NewTutorService(tutorProfileRepository)
-		transactionService  service.ClassTransactionService = service.NewClassTransactionService(db, transactionRepository, scheduleRepository, classRepository)
+		transactionService  service.ClassTransactionService = service.NewClassTransactionService(db, transactionRepository, scheduleRepository, classRepository, userRepository, midtransService)
 		// userService                   service.UserService                   = service.NewUser(userRepository, userDisciplineRepository, disciplineGroupConsolidatorRepository, disciplineListDocumentConsolidatorRepository, packageRepository, db)
 
 		//=========== (CONTROLLER) ===========//

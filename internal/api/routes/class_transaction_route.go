@@ -7,6 +7,9 @@ import (
 )
 
 func ClassTransaction(app *gin.Engine, classTransactionController controller.ClassTransactionController, middleware middleware.Middleware) {
+	// Public route for Midtrans callback
+	app.POST("/api/transactions/midtrans-callback", classTransactionController.MidtransCallback)
+
 	routes := app.Group("/api/transactions/classes")
 	{
 		routes.POST("", middleware.Authenticate(), classTransactionController.Checkout)

@@ -11,6 +11,7 @@ type ClassTransactionStatus string
 const (
 	ClassTransactionStatusSuccess   ClassTransactionStatus = "SUCCESS"
 	ClassTransactionStatusPending   ClassTransactionStatus = "PENDING"
+	ClassTransactionStatusPaid      ClassTransactionStatus = "PAID"
 	ClassTransactionStatusCancelled ClassTransactionStatus = "CANCELLED"
 )
 
@@ -21,6 +22,7 @@ type ClassTransaction struct {
 	UserID     uuid.UUID              `json:"user_id" gorm:"type:uuid;not null"`
 	TotalPrice int64                  `json:"total_price" gorm:"not null"`
 	Status     ClassTransactionStatus `json:"status" gorm:"not null"`
+	PaymentURL string                 `json:"payment_url" gorm:"type:text"`
 	CreatedAt  time.Time              `json:"created_at" gorm:"type:timestamp without time zone;not null"`
 
 	Class    Class    `json:"class" gorm:"foreignKey:ClassID"`

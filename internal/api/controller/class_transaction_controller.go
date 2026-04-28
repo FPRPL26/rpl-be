@@ -12,6 +12,7 @@ type (
 	ClassTransactionController interface {
 		Checkout(ctx *gin.Context)
 		Complete(ctx *gin.Context)
+		MidtransCallback(ctx *gin.Context)
 	}
 
 	classTransactionController struct {
@@ -55,4 +56,20 @@ func (c *classTransactionController) Complete(ctx *gin.Context) {
 	}
 
 	response.NewSuccess("Class completed. Payment released to tutor.", nil).Send(ctx)
+}
+
+func (c *classTransactionController) MidtransCallback(ctx *gin.Context) {
+	var payload map[string]interface{}
+	if err := ctx.ShouldBindJSON(&payload); err != nil {
+		response.NewFailed("failed to bind request", err).Send(ctx)
+		return
+	}
+
+	err := c.transactionService.HandleMidtransCallback(ctx.Request.Context(), payload)
+	if err != nil {
+		response.NewFailed("failed to handle midtrans callback", err).Send(ctx)
+		return
+	}
+
+	response.NewSuccess("Midtrans callback handled successfully", nil).Send(ctx)
 }

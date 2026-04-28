@@ -10,4 +10,5 @@ type ClassTransactionResponse struct {
 	TransactionID uuid.UUID `json:"transaction_id"`
 	Status        string    `json:"status"`
 	TotalPrice    int64     `json:"total_price"`
+	PaymentURL    string    `json:"payment_url"`
 }

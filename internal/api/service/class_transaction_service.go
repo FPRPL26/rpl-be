@@ -10,6 +10,7 @@ import (
 	"github.com/FPRPL26/rpl-be/internal/dto"
 	"github.com/FPRPL26/rpl-be/internal/entity"
 	myerror "github.com/FPRPL26/rpl-be/internal/pkg/error"
+	"github.com/FPRPL26/rpl-be/internal/pkg/midtrans"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -18,6 +19,7 @@ type (
 	ClassTransactionService interface {
 		Checkout(ctx context.Context, userID string, req dto.CheckoutClassRequest) (dto.ClassTransactionResponse, error)
 		Complete(ctx context.Context, transactionID string) error
+		HandleMidtransCallback(ctx context.Context, payload map[string]interface{}) error
 	}
 
 	classTransactionService struct {
@@ -25,6 +27,8 @@ type (
 		transactionRepo repository.ClassTransactionRepository
 		scheduleRepo    repository.ScheduleRepository
 		classRepo       repository.ClassRepository
+		userRepo        repository.UserRepository
+		midtransService midtrans.MidtransService
 	}
 )
 
@@ -33,17 +37,26 @@ func NewClassTransactionService(
 	transactionRepo repository.ClassTransactionRepository,
 	scheduleRepo repository.ScheduleRepository,
 	classRepo repository.ClassRepository,
+	userRepo repository.UserRepository,
+	midtransService midtrans.MidtransService,
 ) ClassTransactionService {
 	return &classTransactionService{
 		db:              db,
 		transactionRepo: transactionRepo,
 		scheduleRepo:    scheduleRepo,
 		classRepo:       classRepo,
+		userRepo:        userRepo,
+		midtransService: midtransService,
 	}
 }
 
 func (s *classTransactionService) Checkout(ctx context.Context, userID string, req dto.CheckoutClassRequest) (dto.ClassTransactionResponse, error) {
 	userUUID, err := uuid.Parse(userID)
+	if err != nil {
+		return dto.ClassTransactionResponse{}, err
+	}
+
+	user, err := s.userRepo.GetById(ctx, nil, userID)
 	if err != nil {
 		return dto.ClassTransactionResponse{}, err
 	}
@@ -82,12 +95,19 @@ func (s *classTransactionService) Checkout(ctx context.Context, userID string, r
 			CreatedAt:  time.Now(),
 		}
 
+		// 4. Generate Midtrans Payment URL
+		paymentURL, err := s.midtransService.CreateSnapTransaction(transaction.ID.String(), transaction.TotalPrice, user.Name, user.Email)
+		if err != nil {
+			return err
+		}
+		transaction.PaymentURL = paymentURL
+
 		created, err := s.transactionRepo.Create(ctx, tx, transaction)
 		if err != nil {
 			return err
 		}
 
-		// 4. Decrement Remaining Capacity
+		// 5. Decrement Remaining Capacity
 		schedule.Remaining -= 1
 		_, err = s.scheduleRepo.Update(ctx, tx, schedule)
 		if err != nil {
@@ -98,6 +118,7 @@ func (s *classTransactionService) Checkout(ctx context.Context, userID string, r
 			TransactionID: created.ID,
 			Status:        string(created.Status),
 			TotalPrice:    created.TotalPrice,
+			PaymentURL:    created.PaymentURL,
 		}
 
 		return nil
@@ -116,7 +137,48 @@ func (s *classTransactionService) Complete(ctx context.Context, transactionID st
 		return err
 	}
 
+	if transaction.Status != entity.ClassTransactionStatusPaid {
+		return myerror.New("transaction is not paid yet", http.StatusBadRequest)
+	}
+
 	transaction.Status = entity.ClassTransactionStatusSuccess
 	_, err = s.transactionRepo.Update(ctx, nil, transaction)
 	return err
+}
+
+func (s *classTransactionService) HandleMidtransCallback(ctx context.Context, payload map[string]interface{}) error {
+	orderID := payload["order_id"].(string)
+	statusCode := payload["status_code"].(string)
+	grossAmount := payload["gross_amount"].(string)
+	signatureKey := payload["signature_key"].(string)
+	transactionStatus := payload["transaction_status"].(string)
+
+	if !s.midtransService.VerifySignatureKey(orderID, statusCode, grossAmount, signatureKey) {
+		return errors.New("invalid signature key")
+	}
+
+	transaction, err := s.transactionRepo.GetById(ctx, nil, orderID)
+	if err != nil {
+		return err
+	}
+
+	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if transactionStatus == "capture" || transactionStatus == "settlement" {
+			transaction.Status = entity.ClassTransactionStatusPaid
+		} else if transactionStatus == "deny" || transactionStatus == "cancel" || transactionStatus == "expire" {
+			// If cancelled, restore capacity
+			if transaction.Status != entity.ClassTransactionStatusCancelled {
+				transaction.Status = entity.ClassTransactionStatusCancelled
+
+				schedule, err := s.scheduleRepo.GetById(ctx, tx.Set("gorm:query_option", "FOR UPDATE"), transaction.ScheduleID.String())
+				if err == nil {
+					schedule.Remaining += 1
+					s.scheduleRepo.Update(ctx, tx, schedule)
+				}
+			}
+		}
+
+		_, err = s.transactionRepo.Update(ctx, tx, transaction)
+		return err
+	})
 }
