@@ -71,14 +71,9 @@ func (c *tutorController) Update(ctx *gin.Context) {
 	}
 
 	var req dto.TutorUpdateRequest
-	if err := ctx.ShouldBind(&req); err != nil {
+	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
-	}
-
-	file, _ := ctx.FormFile("profile_picture")
-	if file != nil {
-		req.ProfilePicture = file
 	}
 
 	res, err := c.service.UpdateTutor(ctx.Request.Context(), id, req)
