@@ -120,7 +120,7 @@ func (c *tutorController) Delete(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusNoContent, nil)
+	ctx.JSON(http.StatusOK, gin.H{"message": "tutor deleted successfully"})
 }
 
 func (c *tutorController) List(ctx *gin.Context) {
