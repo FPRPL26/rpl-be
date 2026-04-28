@@ -44,6 +44,10 @@ func (s *midtransService) CreateSnapTransaction(transactionID string, amount int
 			FName: customerName,
 			Email: customerEmail,
 		},
+		Expiry: &snap.ExpiryDetails{
+			Duration: 15,
+			Unit:     "minute",
+		},
 	}
 
 	snapResp, err := snap.CreateTransaction(req)

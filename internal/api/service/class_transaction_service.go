@@ -166,8 +166,8 @@ func (s *classTransactionService) HandleMidtransCallback(ctx context.Context, pa
 		if transactionStatus == "capture" || transactionStatus == "settlement" {
 			transaction.Status = entity.ClassTransactionStatusPaid
 		} else if transactionStatus == "deny" || transactionStatus == "cancel" || transactionStatus == "expire" {
-			// If cancelled, restore capacity
-			if transaction.Status != entity.ClassTransactionStatusCancelled {
+			// If cancelled or expired, restore capacity ONLY if it was previously PENDING
+			if transaction.Status == entity.ClassTransactionStatusPending {
 				transaction.Status = entity.ClassTransactionStatusCancelled
 
 				schedule, err := s.scheduleRepo.GetById(ctx, tx.Set("gorm:query_option", "FOR UPDATE"), transaction.ScheduleID.String())
@@ -175,6 +175,9 @@ func (s *classTransactionService) HandleMidtransCallback(ctx context.Context, pa
 					schedule.Remaining += 1
 					s.scheduleRepo.Update(ctx, tx, schedule)
 				}
+			} else {
+				// Just update status if it wasn't pending (e.g. already cancelled)
+				transaction.Status = entity.ClassTransactionStatusCancelled
 			}
 		}
 
