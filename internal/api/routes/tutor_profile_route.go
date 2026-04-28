@@ -14,10 +14,9 @@ func Tutor(r *gin.Engine, c controller.TutorController, middleware middleware.Mi
 
 		protected := routes.Group("")
 		protected.Use(middleware.Authenticate())
-		{
-			protected.POST("/upgrade", c.Create)
-			protected.PATCH("/:id", c.Update)
-			protected.DELETE("/:id", c.Delete)
-		}
+
+		protected.POST("/upgrade", c.Create)
+		protected.PATCH("/:id", c.Update)
+		protected.DELETE("/:id", c.Delete)
 	}
 }

@@ -9,6 +9,7 @@ import (
 
 	"github.com/FPRPL26/rpl-be/internal/entity"
 	"github.com/FPRPL26/rpl-be/internal/middleware"
+	myerror "github.com/FPRPL26/rpl-be/internal/pkg/error"
 	mylog "github.com/FPRPL26/rpl-be/internal/pkg/logger"
 	"github.com/FPRPL26/rpl-be/internal/pkg/response"
 	"github.com/FPRPL26/rpl-be/internal/utils"
@@ -63,6 +64,26 @@ func NewRouter(server *gin.Engine, db *gorm.DB) *gin.Engine {
 			"id":   media.ID,
 			"url":  fileURL,
 			"path": filename,
+		}).Send(ctx)
+	})
+
+	server.GET("/api/uploads/:path", func(ctx *gin.Context) {
+		path := ctx.Param("path")
+
+		var media entity.MediaAsset
+		if err := db.Where("url LIKE ?", "%"+path).First(&media).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				response.NewFailed("media not found", myerror.New("media not found", http.StatusNotFound)).SendWithAbort(ctx)
+				return
+			}
+			response.NewFailed("failed to get media asset", err).SendWithAbort(ctx)
+			return
+		}
+
+		response.NewSuccess("success get public url", gin.H{
+			"id":   media.ID,
+			"url":  media.URL,
+			"path": path,
 		}).Send(ctx)
 	})
 
