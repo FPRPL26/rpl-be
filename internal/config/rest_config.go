@@ -14,6 +14,7 @@ import (
 	"github.com/FPRPL26/rpl-be/internal/middleware"
 	"github.com/FPRPL26/rpl-be/internal/pkg/cron"
 	mailer "github.com/FPRPL26/rpl-be/internal/pkg/email"
+	"github.com/FPRPL26/rpl-be/internal/pkg/midtrans"
 	"github.com/gin-gonic/gin"
 )
 
@@ -31,7 +32,8 @@ func NewRest() RestConfig {
 
 	var (
 		//=========== (PACKAGE) ===========//
-		mailerService mailer.Mailer = mailer.New()
+		mailerService   mailer.Mailer            = mailer.New()
+		midtransService midtrans.MidtransService = midtrans.NewMidtransService()
 		// oauthService  oauth.Oauth   = oauth.New()
 		// awsS3Service  storage.AwsS3 = storage.NewAwsS3()
 
@@ -43,6 +45,7 @@ func NewRest() RestConfig {
 		scheduleRepository         repository.ScheduleRepository     = repository.NewScheduleRepository(db)
 		tutorProfileRepository     repository.TutorProfileRepository = repository.NewTutorProfileRepository(db)
 		userClassRequestRepository repository.ClassRequestRepository = repository.NewClassRequestRepository(db)
+    transactionRepository  repository.ClassTransactionRepository = repository.NewClassTransactionRepository(db)
 
 		//=========== (SERVICE) ===========//
 		authService         service.AuthService         = service.NewAuth(userRepository, refreshTokenRepository, mailerService, db)
@@ -50,6 +53,7 @@ func NewRest() RestConfig {
 		classService        service.ClassService        = service.NewClass(classRepository, scheduleRepository)
 		tutorProfileService service.TutorService        = service.NewTutorService(tutorProfileRepository)
 		classRequestService service.ClassRequestService = service.NewClassRequestService(userClassRequestRepository)
+    transactionService  service.ClassTransactionService = service.NewClassTransactionService(db, transactionRepository, scheduleRepository, classRepository, userRepository, midtransService)
 		// userService                   service.UserService                   = service.NewUser(userRepository, userDisciplineRepository, disciplineGroupConsolidatorRepository, disciplineListDocumentConsolidatorRepository, packageRepository, db)
 
 		//=========== (CONTROLLER) ===========//
@@ -58,6 +62,7 @@ func NewRest() RestConfig {
 		classController        controller.ClassController        = controller.NewClass(classService)
 		tutorProfileController controller.TutorController        = controller.NewTutorController(tutorProfileService)
 		classRequestController controller.ClassRequestController = controller.NewClassRequest(classRequestService)
+    transactionController  controller.ClassTransactionController = controller.NewClassTransactionController(transactionService)
 		// userController                   controller.UserController                   = controller.NewUser(userService)
 	)
 
@@ -67,6 +72,7 @@ func NewRest() RestConfig {
 	routes.Class(server, classController, middleware)
 	routes.Tutor(server, tutorProfileController, middleware)
 	routes.ClassRequest(server, classRequestController, middleware)
+	routes.ClassTransaction(server, transactionController, middleware)
 
 	return RestConfig{
 		server: server,

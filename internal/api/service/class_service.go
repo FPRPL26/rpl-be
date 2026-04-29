@@ -49,6 +49,7 @@ func (s *classService) Create(ctx context.Context, tutorId string, req dto.Creat
 		Name:         req.Name,
 		Description:  req.Description,
 		ThumbnailURL: req.ThumbnailURL,
+		Price:        req.Price,
 	}
 
 	if req.ChatWA != "" {
@@ -72,6 +73,7 @@ func (s *classService) GetAll(ctx context.Context, metaReq meta.Meta) ([]dto.Cla
 			ThumbnailURL: class.ThumbnailURL,
 			MentorID:     class.TutorID.String(),
 			MentorName:   class.TutorProfile.Name,
+			Price:        class.Price,
 		})
 	}
 
@@ -106,6 +108,7 @@ func (s *classService) GetById(ctx context.Context, classId string) (dto.ClassDe
 			EndTime:    sch.EndTime.Format(time.RFC3339),
 			Date:       sch.Date.Format("02-01-2006"),
 			MaxStudent: sch.MaxStudent,
+			Remaining:  sch.Remaining,
 			Repeted:    sch.Repeted,
 		})
 	}
@@ -116,6 +119,7 @@ func (s *classService) GetById(ctx context.Context, classId string) (dto.ClassDe
 		Description:  class.Description,
 		ThumbnailURL: class.ThumbnailURL,
 		ChatWA:       chatWA,
+		Price:        class.Price,
 		MentorID:     class.TutorID.String(),
 		MentorName:   class.TutorProfile.Name,
 		Schedules:    scheduleResponses,
@@ -146,6 +150,7 @@ func (s *classService) GetSchedules(ctx context.Context, metaReq meta.Meta, clas
 			EndTime:    sch.EndTime.Format(time.RFC3339),
 			Date:       sch.Date.Format("02-01-2006"),
 			MaxStudent: sch.MaxStudent,
+			Remaining:  sch.Remaining,
 			Repeted:    sch.Repeted,
 		})
 	}
@@ -175,6 +180,9 @@ func (s *classService) Update(ctx context.Context, tutorId string, classId strin
 	if req.ChatWA != "" {
 		class.ChatWA = &req.ChatWA
 	}
+	if req.Price != 0 {
+		class.Price = req.Price
+	}
 
 	updatedClass, err := s.classRepo.Update(ctx, nil, class)
 	if err != nil {
@@ -187,6 +195,7 @@ func (s *classService) Update(ctx context.Context, tutorId string, classId strin
 		ThumbnailURL: updatedClass.ThumbnailURL,
 		MentorID:     updatedClass.TutorID.String(),
 		MentorName:   updatedClass.TutorProfile.Name,
+		Price:        updatedClass.Price,
 	}, nil
 }
 
@@ -241,6 +250,7 @@ func (s *classService) AddSchedules(ctx context.Context, classId string, req dto
 			EndTime:    endTime,
 			Date:       date,
 			MaxStudent: schReq.MaxStudent,
+			Remaining:  schReq.MaxStudent,
 			Repeted:    schReq.Repeted,
 		})
 	}
@@ -305,6 +315,7 @@ func (s *classService) UpdateSchedule(ctx context.Context, tutorId string, sched
 		EndTime:    updatedSchedule.EndTime.Format(time.RFC3339),
 		Date:       updatedSchedule.Date.Format("02-01-2006"),
 		MaxStudent: updatedSchedule.MaxStudent,
+		Remaining:  updatedSchedule.Remaining,
 		Repeted:    updatedSchedule.Repeted,
 	}, nil
 }

@@ -14,6 +14,7 @@ type Schedule struct {
 	Date       time.Time `json:"date" gorm:"type:date;not null"`
 	Repeted    int       `json:"repeted" gorm:"not null"`
 	MaxStudent int64     `json:"max_student" gorm:"not null"`
+	Remaining  int64     `json:"remaining" gorm:"not null"`
 
 	Class Class `json:"class" gorm:"foreignKey:ClassID"`
 }

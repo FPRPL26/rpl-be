@@ -14,5 +14,13 @@
     "password": "Password.2",
     "is_verified": true,
     "role": "USER"
+  },
+  {
+    "id": "7f79008c-5dc1-4ab7-b179-78842c67250e",
+    "name": "user",
+    "email": "john@email.com",
+    "password": "Password.2",
+    "is_verified": true,
+    "role": "USER"
   }
 ]

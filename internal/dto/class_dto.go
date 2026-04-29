@@ -7,6 +7,7 @@ type CreateClassRequest struct {
 	Description  string `json:"description" binding:"required"`
 	ThumbnailURL string `json:"thumbnail_url" binding:"required"`
 	ChatWA       string `json:"chat_wa"`
+	Price        int64  `json:"price" binding:"required"`
 }
 
 type CreateClassResponse struct {
@@ -19,6 +20,7 @@ type ClassResponse struct {
 	ThumbnailURL string `json:"thumbnail_url"`
 	MentorID     string `json:"mentor_id"`
 	MentorName   string `json:"mentor_name"`
+	Price        int64  `json:"price"`
 }
 
 type ClassDetailResponse struct {
@@ -27,6 +29,7 @@ type ClassDetailResponse struct {
 	Description  string             `json:"description"`
 	ThumbnailURL string             `json:"thumbnail_url"`
 	ChatWA       string             `json:"chat_wa"`
+	Price        int64              `json:"price"`
 	MentorID     string             `json:"mentor_id"`
 	MentorName   string             `json:"mentor_name"`
 	Schedules    []ScheduleResponse `json:"schedules"`
@@ -37,4 +40,5 @@ type UpdateClassRequest struct {
 	Description  string `json:"description"`
 	ThumbnailURL string `json:"thumnail_url"`
 	ChatWA       string `json:"chat_wa"`
+	Price        int64  `json:"price"`
 }
