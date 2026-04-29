@@ -1,23 +1,20 @@
 package dto
 
-import (
-	"mime/multipart"
-
-	"github.com/google/uuid"
-)
+import "github.com/google/uuid"
 
 type TutorRequest struct {
-	Name     string `json:"name" validate:"required"`
-	Semester int    `json:"semester" validate:"required,min=1"`
-	Jurusan  int64  `json:"jurusan" validate:"required"`
+	Name              string `json:"name" validate:"required"`
+	Semester          int    `json:"semester" validate:"required,min=1"`
+	Jurusan           int64  `json:"jurusan" validate:"required"`
+	ProfilePictureURL string `json:"profile_picture_url"`
 }
 
 type TutorUpdateRequest struct {
-	Name           string                `form:"name"`
-	Semester       int                   `form:"semester" validate:"omitempty,min=1"`
-	Jurusan        int64                 `form:"jurusan"`
-	IsVerified     *bool                 `form:"is_verified"`
-	ProfilePicture *multipart.FileHeader `form:"profile_picture"`
+	Name              string `json:"name"`
+	Semester          int    `json:"semester" validate:"omitempty,min=1"`
+	Jurusan           int64  `json:"jurusan"`
+	IsVerified        *bool  `json:"is_verified"`
+	ProfilePictureURL string `json:"profile_picture_url"`
 }
 
 type TutorResponse struct {

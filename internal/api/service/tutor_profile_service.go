@@ -2,12 +2,10 @@ package service
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/FPRPL26/rpl-be/internal/api/repository"
 	"github.com/FPRPL26/rpl-be/internal/dto"
 	"github.com/FPRPL26/rpl-be/internal/entity"
-	"github.com/FPRPL26/rpl-be/internal/utils"
 	"github.com/google/uuid"
 )
 
@@ -31,11 +29,12 @@ func NewTutorService(repo repository.TutorProfileRepository) TutorService {
 
 func (s *tutorService) CreateTutor(ctx context.Context, userID uuid.UUID, req dto.TutorRequest) (dto.TutorResponse, error) {
 	tutor := &entity.TutorProfile{
-		ID:       userID,
-		Name:     req.Name,
-		Semester: req.Semester,
-		Jurusan:  req.Jurusan,
-		Rating:   0.0,
+		ID:                userID,
+		Name:              req.Name,
+		Semester:          req.Semester,
+		Jurusan:           req.Jurusan,
+		ProfilePictureURL: req.ProfilePictureURL,
+		Rating:            0.0,
 	}
 
 	if err := s.repo.Create(ctx, tutor); err != nil {
@@ -64,19 +63,8 @@ func (s *tutorService) UpdateTutor(ctx context.Context, id uuid.UUID, req dto.Tu
 		tutor.IsVerified = *req.IsVerified
 	}
 
-	if req.ProfilePicture != nil {
-		if tutor.ProfilePictureURL != "" {
-			_ = utils.DeleteFile(tutor.ProfilePictureURL)
-		}
-
-		ext := utils.GetExtensions(req.ProfilePicture.Filename)
-		relativeID := fmt.Sprintf("profiles/%s.%s", id.String(), ext)
-
-		if err := utils.UploadFile(req.ProfilePicture, relativeID); err != nil {
-			return dto.TutorResponse{}, err
-		}
-
-		tutor.ProfilePictureURL = relativeID
+	if req.ProfilePictureURL != "" {
+		tutor.ProfilePictureURL = req.ProfilePictureURL
 	}
 
 	if err := s.repo.Update(ctx, tutor); err != nil {
@@ -95,15 +83,10 @@ func (s *tutorService) GetTutorByID(ctx context.Context, id uuid.UUID) (dto.Tuto
 }
 
 func (s *tutorService) DeleteTutor(ctx context.Context, id uuid.UUID) error {
-	tutor, err := s.repo.GetByID(ctx, id)
+	_, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		return err
 	}
-
-	if tutor.ProfilePictureURL != "" {
-		_ = utils.DeleteFile(tutor.ProfilePictureURL)
-	}
-
 	return s.repo.Delete(ctx, id)
 }
 

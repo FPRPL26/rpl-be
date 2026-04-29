@@ -38,29 +38,32 @@ func NewRest() RestConfig {
 		// awsS3Service  storage.AwsS3 = storage.NewAwsS3()
 
 		//=========== (REPOSITORY) ===========//
-		userRepository         repository.UserRepository             = repository.NewUser(db)
-		refreshTokenRepository repository.RefreshTokenRepository     = repository.NewRefreshTokenRepository(db)
-		taskRepository         repository.TaskRepository             = repository.NewTask(db)
-		classRepository        repository.ClassRepository            = repository.NewClassRepository(db)
-		scheduleRepository     repository.ScheduleRepository         = repository.NewScheduleRepository(db)
-		tutorProfileRepository repository.TutorProfileRepository     = repository.NewTutorProfileRepository(db)
-		transactionRepository  repository.ClassTransactionRepository = repository.NewClassTransactionRepository(db)
+		userRepository             repository.UserRepository         = repository.NewUser(db)
+		refreshTokenRepository     repository.RefreshTokenRepository = repository.NewRefreshTokenRepository(db)
+		taskRepository             repository.TaskRepository         = repository.NewTask(db)
+		classRepository            repository.ClassRepository        = repository.NewClassRepository(db)
+		scheduleRepository         repository.ScheduleRepository     = repository.NewScheduleRepository(db)
+		tutorProfileRepository     repository.TutorProfileRepository = repository.NewTutorProfileRepository(db)
+		userClassRequestRepository repository.ClassRequestRepository = repository.NewClassRequestRepository(db)
+    transactionRepository  repository.ClassTransactionRepository = repository.NewClassTransactionRepository(db)
 
 		//=========== (SERVICE) ===========//
-		authService         service.AuthService             = service.NewAuth(userRepository, refreshTokenRepository, mailerService, db)
-		taskService         service.TaskService             = service.NewTask(taskRepository)
-		classService        service.ClassService            = service.NewClass(classRepository, scheduleRepository)
-		tutorProfileService service.TutorService            = service.NewTutorService(tutorProfileRepository)
-		transactionService  service.ClassTransactionService = service.NewClassTransactionService(db, transactionRepository, scheduleRepository, classRepository, userRepository, midtransService)
+		authService         service.AuthService         = service.NewAuth(userRepository, refreshTokenRepository, mailerService, db)
+		taskService         service.TaskService         = service.NewTask(taskRepository)
+		classService        service.ClassService        = service.NewClass(classRepository, scheduleRepository)
+		tutorProfileService service.TutorService        = service.NewTutorService(tutorProfileRepository)
+		classRequestService service.ClassRequestService = service.NewClassRequestService(userClassRequestRepository)
+    transactionService  service.ClassTransactionService = service.NewClassTransactionService(db, transactionRepository, scheduleRepository, classRepository, userRepository, midtransService)
 		// userService                   service.UserService                   = service.NewUser(userRepository, userDisciplineRepository, disciplineGroupConsolidatorRepository, disciplineListDocumentConsolidatorRepository, packageRepository, db)
 
 		//=========== (CONTROLLER) ===========//
-		authController         controller.AuthController             = controller.NewAuth(authService)
-		taskController         controller.TaskController             = controller.NewTask(taskService)
-		classController        controller.ClassController            = controller.NewClass(classService)
-		tutorProfileController controller.TutorController            = controller.NewTutorController(tutorProfileService)
-		transactionController  controller.ClassTransactionController = controller.NewClassTransactionController(transactionService)
-	// userController                   controller.UserController                   = controller.NewUser(userService)
+		authController         controller.AuthController         = controller.NewAuth(authService)
+		taskController         controller.TaskController         = controller.NewTask(taskService)
+		classController        controller.ClassController        = controller.NewClass(classService)
+		tutorProfileController controller.TutorController        = controller.NewTutorController(tutorProfileService)
+		classRequestController controller.ClassRequestController = controller.NewClassRequest(classRequestService)
+    transactionController  controller.ClassTransactionController = controller.NewClassTransactionController(transactionService)
+		// userController                   controller.UserController                   = controller.NewUser(userService)
 	)
 
 	// Register all routes
@@ -68,6 +71,7 @@ func NewRest() RestConfig {
 	routes.Task(server, taskController, middleware)
 	routes.Class(server, classController, middleware)
 	routes.Tutor(server, tutorProfileController, middleware)
+	routes.ClassRequest(server, classRequestController, middleware)
 	routes.ClassTransaction(server, transactionController, middleware)
 
 	return RestConfig{
