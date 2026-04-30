@@ -1,6 +1,8 @@
 package entity
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 )
 
@@ -19,6 +21,7 @@ type Review struct {
 	UserID          uuid.UUID  `json:"user_id" gorm:"type:uuid;not null"`
 	Rating          int64      `json:"rating" gorm:"not null"`
 	Comment         string     `json:"comment" gorm:"not null"`
+	CreatedAt       time.Time  `json:"created_at" gorm:"type:timestamp without time zone;not null"`
 
 	User User `json:"user" gorm:"foreignKey:UserID"`
 }

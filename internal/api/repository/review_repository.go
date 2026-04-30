@@ -82,7 +82,7 @@ func (r *reviewRepository) GetLatestReviewsByClassId(ctx context.Context, tx *go
 		Preload("User").
 		Joins("JOIN class_transactions ON class_transactions.id = reviews.transaction_id").
 		Where("class_transactions.class_id = ? AND reviews.transaction_type = ?", classId, entity.ReviewTypeClass).
-		Order("reviews.id DESC").
+		Order("reviews.created_at DESC").
 		Limit(limit).
 		Find(&reviews).Error
 

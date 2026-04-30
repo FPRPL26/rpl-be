@@ -164,7 +164,7 @@ func (s *classService) GetById(ctx context.Context, classId string) (dto.ClassDe
 				UserName:  r.User.Name,
 				Rating:    r.Rating,
 				Comment:   r.Comment,
-				CreatedAt: "", // Entity doesn't have CreatedAt, but DTO expects string. Leaving blank or could use ID-based time if Snowflake-like.
+				CreatedAt: r.CreatedAt.Format(time.RFC3339),
 			})
 		}
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/FPRPL26/rpl-be/internal/api/repository"
 	"github.com/FPRPL26/rpl-be/internal/dto"
@@ -121,6 +122,7 @@ func (s *reviewService) SubmitReview(ctx context.Context, userID string, req dto
 		UserID:          userUUID,
 		Rating:          req.Rating,
 		Comment:         req.Comment,
+		CreatedAt:       time.Now(),
 	}
 
 	created, err := s.reviewRepo.Create(ctx, nil, review)
