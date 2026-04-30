@@ -15,6 +15,7 @@ func Seeding(db *gorm.DB) error {
 		seeds.SeederClass,
 		seeds.SeederSchedule,
 		seeds.SeederClassTransaction,
+		seeds.SeederSkills,
 	}
 
 	fmt.Println(mylog.ColorizeInfo("\n=========== Start Seeding ==========="))

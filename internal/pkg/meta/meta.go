@@ -134,6 +134,9 @@ func NewWithDefault(ctx *gin.Context, dtake int, dpage int, dsort string, dsortB
 // It sets the TotalData and TotalPage fields in the Meta struct.
 func (m *Meta) Count(totaldata int) {
 	m.TotalData = totaldata
+	if m.Take <= 0 {
+		m.Take = 10
+	}
 	m.TotalPage = (totaldata + m.Take - 1) / m.Take
 }
 
