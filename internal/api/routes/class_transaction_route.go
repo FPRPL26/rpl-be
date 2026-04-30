@@ -6,15 +6,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func ClassTransaction(app *gin.Engine, classTransactionController controller.ClassTransactionController, middleware middleware.Middleware) {
+func ClassTransaction(app *gin.Engine, classTransactionController controller.ClassTransactionController, reviewController controller.ReviewController, middleware middleware.Middleware) {
 	// Public route for Midtrans callback
 	app.POST("/api/transactions/midtrans-callback", classTransactionController.MidtransCallback)
 
-	routes := app.Group("/api/transactions/classes")
+	routes := app.Group("/api/transactions")
 	{
 		routes.Use(middleware.Authenticate())
-		routes.POST("", classTransactionController.Checkout)
-		routes.GET("", classTransactionController.GetAll)
-		routes.POST("/:transaction_id/complete", classTransactionController.Complete)
+
+		// Class specific transactions
+		classes := routes.Group("/classes")
+		{
+			classes.POST("", classTransactionController.Checkout)
+			classes.GET("", classTransactionController.GetAll)
+			classes.POST("/:transaction_id/complete", classTransactionController.Complete)
+		}
 	}
 }

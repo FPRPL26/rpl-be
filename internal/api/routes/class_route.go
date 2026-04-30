@@ -10,20 +10,23 @@ func Class(app *gin.Engine, classController controller.ClassController, middlewa
 	routes := app.Group("/api/classes")
 	{
 		routes.GET("", classController.GetAll)
-		routes.GET("/:class_id", classController.GetById)
-		routes.GET("/:class_id/schedules", classController.GetSchedules)
-		
+
 		// Protected routes
 		protected := routes.Group("")
 		protected.Use(middleware.Authenticate())
 		{
+			protected.GET("/me", classController.GetAllMyClass)
+			protected.GET("/me/tutor", classController.GetAllMyClassAsTutor)
 			protected.POST("", classController.Create)
 			protected.PUT("/:class_id", classController.Update)
 			protected.DELETE("/:class_id", classController.Delete)
-			
+
 			protected.POST("/:class_id/schedules", classController.AddSchedules)
 			protected.PUT("/schedules/:schedule_id", classController.UpdateSchedule)
 			protected.DELETE("/schedules/:schedule_id", classController.DeleteSchedule)
 		}
+
+		routes.GET("/:class_id", classController.GetById)
+		routes.GET("/:class_id/schedules", classController.GetSchedules)
 	}
 }

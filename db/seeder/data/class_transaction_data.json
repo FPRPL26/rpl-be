@@ -1,0 +1,12 @@
+[
+  {
+    "id": "f1f1f1f1-2f2f-3f3f-4f4f-5f5f5f5f5f5f",
+    "class_id": "e3e8f8e8-9e9e-4e4e-8e8e-e8e8f8e8f8e8",
+    "schedule_id": "a1a1a1a1-b2b2-c3c3-d4d4-e5e5e5e5e5e5",
+    "user_id": "7f79008c-5dc1-4ab7-b179-78842c67250e",
+    "total_price": 150000,
+    "status": "SUCCESS",
+    "payment_url": "https://example.com/pay",
+    "created_at": "2026-04-30T10:00:00Z"
+  }
+]
