@@ -1,4 +1,4 @@
-version: "3.9"
+# Hapus baris 'version: "3.9"' di paling atas karena sudah obsolete (usang) di Docker Compose v2
 
 services:
   app-dev:
@@ -14,7 +14,8 @@ services:
     env_file:
       - .env
     depends_on:
-      - db-dev
+      db-dev:
+        condition: service_healthy
     networks:
       - rpl-app-dev-net
 
@@ -29,6 +30,11 @@ services:
       - pgdata_dev:/var/lib/postgresql/data
     networks:
       - rpl-app-dev-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   pgdata_dev:

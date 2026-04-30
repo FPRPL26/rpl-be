@@ -135,7 +135,7 @@ func NewWithDefault(ctx *gin.Context, dtake int, dpage int, dsort string, dsortB
 func (m *Meta) Count(totaldata int) {
 	m.TotalData = totaldata
 	if m.Take <= 0 {
-		m.Take = 10
+		m.Take = 10000000
 	}
 	m.TotalPage = (totaldata + m.Take - 1) / m.Take
 }
