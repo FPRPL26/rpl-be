@@ -30,6 +30,8 @@ type ClassDetailResponse struct {
 	ThumbnailURL string             `json:"thumbnail_url"`
 	ChatWA       string             `json:"chat_wa"`
 	Price        int64              `json:"price"`
+	Rating       *float64           `json:"rating"`
+	Reviews      []ReviewResponse   `json:"reviews"`
 	MentorID     string             `json:"mentor_id"`
 	MentorName   string             `json:"mentor_name"`
 	Schedules    []ScheduleResponse `json:"schedules"`

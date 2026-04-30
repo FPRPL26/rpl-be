@@ -34,12 +34,13 @@ type (
 		classRepo       repository.ClassRepository
 		scheduleRepo    repository.ScheduleRepository
 		transactionRepo repository.ClassTransactionRepository
+		reviewRepo      repository.ReviewRepository
 		db              *gorm.DB
 	}
 )
 
-func NewClass(classRepo repository.ClassRepository, scheduleRepo repository.ScheduleRepository, transactionRepo repository.ClassTransactionRepository, db *gorm.DB) ClassService {
-	return &classService{classRepo, scheduleRepo, transactionRepo, db}
+func NewClass(classRepo repository.ClassRepository, scheduleRepo repository.ScheduleRepository, transactionRepo repository.ClassTransactionRepository, reviewRepo repository.ReviewRepository, db *gorm.DB) ClassService {
+	return &classService{classRepo, scheduleRepo, transactionRepo, reviewRepo, db}
 }
 
 func (s *classService) Create(ctx context.Context, tutorId string, req dto.CreateClassRequest) (entity.Class, error) {
@@ -147,6 +148,27 @@ func (s *classService) GetById(ctx context.Context, classId string) (dto.ClassDe
 		chatWA = *class.ChatWA
 	}
 
+	avgRating, err := s.reviewRepo.GetAverageRatingByClassId(ctx, nil, classId)
+	var ratingPtr *float64
+	if err == nil && avgRating > 0 {
+		ratingPtr = &avgRating
+	}
+
+	reviews, err := s.reviewRepo.GetLatestReviewsByClassId(ctx, nil, classId, 5)
+	reviewResponses := make([]dto.ReviewResponse, 0, len(reviews))
+	if err == nil {
+		for _, r := range reviews {
+			reviewResponses = append(reviewResponses, dto.ReviewResponse{
+				ID:        r.ID,
+				UserID:    r.UserID,
+				UserName:  r.User.Name,
+				Rating:    r.Rating,
+				Comment:   r.Comment,
+				CreatedAt: "", // Entity doesn't have CreatedAt, but DTO expects string. Leaving blank or could use ID-based time if Snowflake-like.
+			})
+		}
+	}
+
 	schedules, _, err := s.scheduleRepo.GetAllByClassId(ctx, nil, meta.Default(), classId)
 	if err != nil {
 		return dto.ClassDetailResponse{}, err
@@ -173,6 +195,8 @@ func (s *classService) GetById(ctx context.Context, classId string) (dto.ClassDe
 		ThumbnailURL: class.ThumbnailURL,
 		ChatWA:       chatWA,
 		Price:        class.Price,
+		Rating:       ratingPtr,
+		Reviews:      reviewResponses,
 		MentorID:     class.TutorID.String(),
 		MentorName:   class.TutorProfile.Name,
 		Schedules:    scheduleResponses,

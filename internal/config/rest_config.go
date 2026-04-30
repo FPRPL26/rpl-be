@@ -52,7 +52,7 @@ func NewRest() RestConfig {
 		//=========== (SERVICE) ===========//
 		authService         service.AuthService             = service.NewAuth(userRepository, refreshTokenRepository, mailerService, db)
 		taskService         service.TaskService             = service.NewTask(taskRepository)
-		classService        service.ClassService            = service.NewClass(classRepository, scheduleRepository, transactionRepository, db)
+		classService        service.ClassService            = service.NewClass(classRepository, scheduleRepository, transactionRepository, reviewRepository, db)
 		tutorProfileService service.TutorService            = service.NewTutorService(tutorProfileRepository)
 		classRequestService service.ClassRequestService     = service.NewClassRequestService(userClassRequestRepository)
 		transactionService  service.ClassTransactionService = service.NewClassTransactionService(db, transactionRepository, scheduleRepository, classRepository, userRepository, midtransService)
