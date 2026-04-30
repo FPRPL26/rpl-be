@@ -1,0 +1,11 @@
+[
+  {
+    "id": "e3e8f8e8-9e9e-4e4e-8e8e-e8e8f8e8f8e8",
+    "tutor_id": "2d07435b-75df-4784-a08d-dd241fb8c78f",
+    "name": "Golang Backend Development",
+    "description": "Learn how to build high-performance backend systems using Go and Gin.",
+    "thumbnail_url": "https://example.com/golang.jpg",
+    "price": 150000,
+    "chat_wa": "628123456789"
+  }
+]

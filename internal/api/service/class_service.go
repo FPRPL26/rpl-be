@@ -19,6 +19,8 @@ type (
 	ClassService interface {
 		Create(ctx context.Context, tutorId string, req dto.CreateClassRequest) (entity.Class, error)
 		GetAll(ctx context.Context, metaReq meta.Meta) ([]dto.ClassResponse, meta.Meta, error)
+		GetAllEnrolled(ctx context.Context, userId string, metaReq meta.Meta) ([]dto.ClassResponse, meta.Meta, error)
+		GetAllByTutorId(ctx context.Context, tutorId string, metaReq meta.Meta) ([]dto.ClassResponse, meta.Meta, error)
 		GetById(ctx context.Context, classId string) (dto.ClassDetailResponse, error)
 		GetSchedules(ctx context.Context, metaReq meta.Meta, classId string) ([]dto.ScheduleResponse, meta.Meta, error)
 		Update(ctx context.Context, tutorId string, classId string, req dto.UpdateClassRequest) (dto.ClassResponse, error)
@@ -29,13 +31,15 @@ type (
 	}
 
 	classService struct {
-		classRepo    repository.ClassRepository
-		scheduleRepo repository.ScheduleRepository
+		classRepo       repository.ClassRepository
+		scheduleRepo    repository.ScheduleRepository
+		transactionRepo repository.ClassTransactionRepository
+		db              *gorm.DB
 	}
 )
 
-func NewClass(classRepo repository.ClassRepository, scheduleRepo repository.ScheduleRepository) ClassService {
-	return &classService{classRepo, scheduleRepo}
+func NewClass(classRepo repository.ClassRepository, scheduleRepo repository.ScheduleRepository, transactionRepo repository.ClassTransactionRepository, db *gorm.DB) ClassService {
+	return &classService{classRepo, scheduleRepo, transactionRepo, db}
 }
 
 func (s *classService) Create(ctx context.Context, tutorId string, req dto.CreateClassRequest) (entity.Class, error) {
@@ -61,6 +65,55 @@ func (s *classService) Create(ctx context.Context, tutorId string, req dto.Creat
 
 func (s *classService) GetAll(ctx context.Context, metaReq meta.Meta) ([]dto.ClassResponse, meta.Meta, error) {
 	classes, meta, err := s.classRepo.GetAll(ctx, nil, metaReq, "TutorProfile")
+	if err != nil {
+		return nil, meta, err
+	}
+
+	classResponses := make([]dto.ClassResponse, 0, len(classes))
+	for _, class := range classes {
+		classResponses = append(classResponses, dto.ClassResponse{
+			ID:           class.ID.String(),
+			Name:         class.Name,
+			ThumbnailURL: class.ThumbnailURL,
+			MentorID:     class.TutorID.String(),
+			MentorName:   class.TutorProfile.Name,
+			Price:        class.Price,
+		})
+	}
+
+	return classResponses, meta, nil
+}
+
+func (s *classService) GetAllEnrolled(ctx context.Context, userId string, metaReq meta.Meta) ([]dto.ClassResponse, meta.Meta, error) {
+	transactions, meta, err := s.transactionRepo.GetAllByUserId(ctx, nil, userId, metaReq, "Class", "Class.TutorProfile")
+	if err != nil {
+		return nil, meta, err
+	}
+
+	classResponses := make([]dto.ClassResponse, 0, len(transactions))
+	for _, tx := range transactions {
+		classResponses = append(classResponses, dto.ClassResponse{
+			ID:           tx.Class.ID.String(),
+			Name:         tx.Class.Name,
+			ThumbnailURL: tx.Class.ThumbnailURL,
+			MentorID:     tx.Class.TutorID.String(),
+			MentorName:   tx.Class.TutorProfile.Name,
+			Price:        tx.Class.Price,
+		})
+	}
+
+	return classResponses, meta, nil
+}
+
+func (s *classService) GetAllByTutorId(ctx context.Context, tutorId string, metaReq meta.Meta) ([]dto.ClassResponse, meta.Meta, error) {
+	tutorUUID, err := uuid.Parse(tutorId)
+	if err != nil {
+		return nil, metaReq, err
+	}
+
+	tx := s.db.Where("tutor_id = ?", tutorUUID)
+
+	classes, meta, err := s.classRepo.GetAll(ctx, tx, metaReq, "TutorProfile")
 	if err != nil {
 		return nil, meta, err
 	}
