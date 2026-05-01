@@ -32,6 +32,7 @@ func Migrate(db *gorm.DB) error {
 		&entity.BarterSkillTransaction{},
 		&entity.ClassTransaction{},
 		&entity.ClassRequestTransaction{},
+		&entity.ClassRequestTutorApplication{},
 		&entity.Review{},
 	); err != nil {
 		return err
