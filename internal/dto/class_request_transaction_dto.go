@@ -2,9 +2,9 @@ package dto
 
 type (
 	CreateClassRequestTransactionRequest struct {
-		RequestID      string `json:"request_id" binding:"required"`
-		TutorProfileID string `json:"tutor_profile_id" binding:"required"`
-		Price          int64  `json:"price"`
+		RequestID     string `json:"request_id" binding:"required"`
+		ApplicationID string `json:"application_id" binding:"required"`
+		Price         int64  `json:"price"`
 	}
 
 	UpdateClassRequestTransactionRequest struct {

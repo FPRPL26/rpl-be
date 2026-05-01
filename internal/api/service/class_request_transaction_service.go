@@ -31,6 +31,7 @@ type (
 		transactionRepo  repository.ClassRequestTransactionRepository
 		classRequestRepo repository.ClassRequestRepository
 		tutorProfileRepo repository.TutorProfileRepository
+		applicationRepo  repository.ClassRequestTutorApplicationRepository
 		userRepo         repository.UserRepository
 		midtransService  midtrans.MidtransService
 	}
@@ -41,6 +42,7 @@ func NewClassRequestTransactionService(
 	transactionRepo repository.ClassRequestTransactionRepository,
 	classRequestRepo repository.ClassRequestRepository,
 	tutorProfileRepo repository.TutorProfileRepository,
+	applicationRepo repository.ClassRequestTutorApplicationRepository,
 	userRepo repository.UserRepository,
 	midtransService midtrans.MidtransService,
 ) ClassRequestTransactionService {
@@ -49,6 +51,7 @@ func NewClassRequestTransactionService(
 		transactionRepo:  transactionRepo,
 		classRequestRepo: classRequestRepo,
 		tutorProfileRepo: tutorProfileRepo,
+		applicationRepo:  applicationRepo,
 		userRepo:         userRepo,
 		midtransService:  midtransService,
 	}
@@ -70,9 +73,24 @@ func (s *classRequestTransactionService) Create(ctx context.Context, userID stri
 		return dto.ClassRequestTransactionResponse{}, myerror.New("invalid request ID", http.StatusBadRequest)
 	}
 
-	tutorProfileID, err := uuid.Parse(req.TutorProfileID)
+	if _, err := uuid.Parse(req.ApplicationID); err != nil {
+		return dto.ClassRequestTransactionResponse{}, myerror.New("invalid application ID", http.StatusBadRequest)
+	}
+
+	application, err := s.applicationRepo.GetById(ctx, nil, req.ApplicationID, "ClassRequest", "TutorProfile")
 	if err != nil {
-		return dto.ClassRequestTransactionResponse{}, myerror.New("invalid tutor profile ID", http.StatusBadRequest)
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return dto.ClassRequestTransactionResponse{}, myerror.New("application not found", http.StatusNotFound)
+		}
+		return dto.ClassRequestTransactionResponse{}, err
+	}
+
+	if application.RequestID.String() != req.RequestID {
+		return dto.ClassRequestTransactionResponse{}, myerror.New("application request mismatch", http.StatusBadRequest)
+	}
+
+	if application.Status != entity.ClassRequestTutorApplicationStatusAccepted {
+		return dto.ClassRequestTransactionResponse{}, myerror.New("application is not accepted", http.StatusBadRequest)
 	}
 
 	classRequest, err := s.classRequestRepo.GetById(ctx, nil, req.RequestID)
@@ -85,6 +103,16 @@ func (s *classRequestTransactionService) Create(ctx context.Context, userID stri
 
 	if classRequest.UserID.String() != userID {
 		return dto.ClassRequestTransactionResponse{}, myerror.New("unauthorized", http.StatusForbidden)
+	}
+
+	if application.ClassRequest.UserID.String() != userID {
+		return dto.ClassRequestTransactionResponse{}, myerror.New("unauthorized", http.StatusForbidden)
+	}
+
+	tutorProfileID := application.TutorProfileID
+
+	if application.ClassRequest.TutorProfileID != uuid.Nil && application.ClassRequest.TutorProfileID != tutorProfileID {
+		return dto.ClassRequestTransactionResponse{}, myerror.New("accepted tutor does not match request record", http.StatusBadRequest)
 	}
 
 	if _, err := s.tutorProfileRepo.GetByID(ctx, tutorProfileID); err != nil {

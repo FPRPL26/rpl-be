@@ -69,17 +69,22 @@ func (s *classRequestService) Create(ctx context.Context, userId string, req dto
 		return dto.ClassRequestResponse{}, err
 	}
 
+	chosenTutorID := ""
+	if created.TutorProfileID != uuid.Nil {
+		chosenTutorID = created.TutorProfileID.String()
+	}
 	res := dto.ClassRequestResponse{
-		ID:          created.ID.String(),
-		UserID:      created.UserID.String(),
-		Name:        created.Name,
-		Description: created.Description,
-		Start:       created.Start.Format(time.RFC3339),
-		End:         created.End.Format(time.RFC3339),
-		Date:        created.Date.Format("02-01-2006"),
-		Status:      string(created.Status),
-		Price:       created.Price,
-		ChatWA:      created.ChatWA,
+		ID:             created.ID.String(),
+		UserID:         created.UserID.String(),
+		Name:           created.Name,
+		Description:    created.Description,
+		Start:          created.Start.Format(time.RFC3339),
+		End:            created.End.Format(time.RFC3339),
+		Date:           created.Date.Format("02-01-2006"),
+		Status:         string(created.Status),
+		Price:          created.Price,
+		ChatWA:         created.ChatWA,
+		TutorProfileID: chosenTutorID,
 	}
 
 	return res, nil
@@ -93,17 +98,22 @@ func (s *classRequestService) GetAll(ctx context.Context) ([]dto.ClassRequestRes
 
 	res := make([]dto.ClassRequestResponse, 0, len(items))
 	for _, it := range items {
+		chosenTutorID := ""
+		if it.TutorProfileID != uuid.Nil {
+			chosenTutorID = it.TutorProfileID.String()
+		}
 		res = append(res, dto.ClassRequestResponse{
-			ID:          it.ID.String(),
-			UserID:      it.UserID.String(),
-			Name:        it.Name,
-			Description: it.Description,
-			Start:       it.Start.Format(time.RFC3339),
-			End:         it.End.Format(time.RFC3339),
-			Date:        it.Date.Format("02-01-2006"),
-			Status:      string(it.Status),
-			Price:       it.Price,
-			ChatWA:      it.ChatWA,
+			ID:             it.ID.String(),
+			UserID:         it.UserID.String(),
+			Name:           it.Name,
+			Description:    it.Description,
+			Start:          it.Start.Format(time.RFC3339),
+			End:            it.End.Format(time.RFC3339),
+			Date:           it.Date.Format("02-01-2006"),
+			Status:         string(it.Status),
+			Price:          it.Price,
+			ChatWA:         it.ChatWA,
+			TutorProfileID: chosenTutorID,
 		})
 	}
 
@@ -119,17 +129,22 @@ func (s *classRequestService) GetById(ctx context.Context, id string) (dto.Class
 		return dto.ClassRequestResponse{}, err
 	}
 
+	chosenTutorID := ""
+	if it.TutorProfileID != uuid.Nil {
+		chosenTutorID = it.TutorProfileID.String()
+	}
 	return dto.ClassRequestResponse{
-		ID:          it.ID.String(),
-		UserID:      it.UserID.String(),
-		Name:        it.Name,
-		Description: it.Description,
-		Start:       it.Start.Format(time.RFC3339),
-		End:         it.End.Format(time.RFC3339),
-		Date:        it.Date.Format("02-01-2006"),
-		Status:      string(it.Status),
-		Price:       it.Price,
-		ChatWA:      it.ChatWA,
+		ID:             it.ID.String(),
+		UserID:         it.UserID.String(),
+		Name:           it.Name,
+		Description:    it.Description,
+		Start:          it.Start.Format(time.RFC3339),
+		End:            it.End.Format(time.RFC3339),
+		Date:           it.Date.Format("02-01-2006"),
+		Status:         string(it.Status),
+		Price:          it.Price,
+		ChatWA:         it.ChatWA,
+		TutorProfileID: chosenTutorID,
 	}, nil
 }
 
@@ -179,17 +194,22 @@ func (s *classRequestService) Update(ctx context.Context, userId string, id stri
 		return dto.ClassRequestResponse{}, err
 	}
 
+	chosenTutorID := ""
+	if updated.TutorProfileID != uuid.Nil {
+		chosenTutorID = updated.TutorProfileID.String()
+	}
 	return dto.ClassRequestResponse{
-		ID:          updated.ID.String(),
-		UserID:      updated.UserID.String(),
-		Name:        updated.Name,
-		Description: updated.Description,
-		Start:       updated.Start.Format(time.RFC3339),
-		End:         updated.End.Format(time.RFC3339),
-		Date:        updated.Date.Format("02-01-2006"),
-		Status:      string(updated.Status),
-		Price:       updated.Price,
-		ChatWA:      updated.ChatWA,
+		ID:             updated.ID.String(),
+		UserID:         updated.UserID.String(),
+		Name:           updated.Name,
+		Description:    updated.Description,
+		Start:          updated.Start.Format(time.RFC3339),
+		End:            updated.End.Format(time.RFC3339),
+		Date:           updated.Date.Format("02-01-2006"),
+		Status:         string(updated.Status),
+		Price:          updated.Price,
+		ChatWA:         updated.ChatWA,
+		TutorProfileID: chosenTutorID,
 	}, nil
 }
 
