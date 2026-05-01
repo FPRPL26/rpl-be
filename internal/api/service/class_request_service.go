@@ -17,7 +17,7 @@ import (
 
 type (
 	ClassRequestService interface {
-		Create(ctx context.Context, userId string, req dto.CreateClassRequestRequest) (entity.ClassRequest, error)
+		Create(ctx context.Context, userId string, req dto.CreateClassRequestRequest) (dto.ClassRequestResponse, error)
 		GetAll(ctx context.Context) ([]dto.ClassRequestResponse, error)
 		GetById(ctx context.Context, id string) (dto.ClassRequestResponse, error)
 		Update(ctx context.Context, userId string, id string, req dto.UpdateClassRequestRequest) (dto.ClassRequestResponse, error)
@@ -33,23 +33,23 @@ func NewClassRequestService(repo repository.ClassRequestRepository) ClassRequest
 	return &classRequestService{repo}
 }
 
-func (s *classRequestService) Create(ctx context.Context, userId string, req dto.CreateClassRequestRequest) (entity.ClassRequest, error) {
+func (s *classRequestService) Create(ctx context.Context, userId string, req dto.CreateClassRequestRequest) (dto.ClassRequestResponse, error) {
 	userUUID, err := uuid.Parse(userId)
 	if err != nil {
-		return entity.ClassRequest{}, err
+		return dto.ClassRequestResponse{}, myerror.New("invalid user ID", http.StatusBadRequest)
 	}
 
 	start, err := time.Parse(time.RFC3339, req.Start)
 	if err != nil {
-		return entity.ClassRequest{}, err
+		return dto.ClassRequestResponse{}, myerror.New("invalid start time", http.StatusBadRequest)
 	}
 	end, err := time.Parse(time.RFC3339, req.End)
 	if err != nil {
-		return entity.ClassRequest{}, err
+		return dto.ClassRequestResponse{}, myerror.New("invalid end time", http.StatusBadRequest)
 	}
 	date, err := time.Parse("02-01-2006", req.Date)
 	if err != nil {
-		return entity.ClassRequest{}, err
+		return dto.ClassRequestResponse{}, myerror.New("invalid date", http.StatusBadRequest)
 	}
 
 	cr := entity.ClassRequest{
@@ -64,7 +64,25 @@ func (s *classRequestService) Create(ctx context.Context, userId string, req dto
 		ChatWA:      req.ChatWA,
 	}
 
-	return s.repo.Create(ctx, nil, cr)
+	created, err := s.repo.Create(ctx, nil, cr)
+	if err != nil {
+		return dto.ClassRequestResponse{}, err
+	}
+
+	res := dto.ClassRequestResponse{
+		ID:          created.ID.String(),
+		UserID:      created.UserID.String(),
+		Name:        created.Name,
+		Description: created.Description,
+		Start:       created.Start.Format(time.RFC3339),
+		End:         created.End.Format(time.RFC3339),
+		Date:        created.Date.Format("02-01-2006"),
+		Status:      string(created.Status),
+		Price:       created.Price,
+		ChatWA:      created.ChatWA,
+	}
+
+	return res, nil
 }
 
 func (s *classRequestService) GetAll(ctx context.Context) ([]dto.ClassRequestResponse, error) {
