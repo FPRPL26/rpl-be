@@ -72,13 +72,23 @@ func (s *classService) GetAll(ctx context.Context, metaReq meta.Meta) ([]dto.Cla
 
 	classResponses := make([]dto.ClassResponse, 0, len(classes))
 	for _, class := range classes {
+		var ratingPtr *float64
+		if class.AverageRating > 0 {
+			ratingPtr = &class.AverageRating
+		}
+
 		classResponses = append(classResponses, dto.ClassResponse{
 			ID:           class.ID.String(),
 			Name:         class.Name,
 			ThumbnailURL: class.ThumbnailURL,
-			MentorID:     class.TutorID.String(),
-			MentorName:   class.TutorProfile.Name,
 			Price:        class.Price,
+			Rating:       ratingPtr,
+			Mentor: dto.Mentor{
+				ID:                class.TutorID.String(),
+				Name:              class.TutorProfile.Name,
+				ProfilePictureURL: class.TutorProfile.ProfilePictureURL,
+				IsVerified:        class.TutorProfile.IsVerified,
+			},
 		})
 	}
 
@@ -93,13 +103,23 @@ func (s *classService) GetAllEnrolled(ctx context.Context, userId string, metaRe
 
 	classResponses := make([]dto.ClassResponse, 0, len(transactions))
 	for _, tx := range transactions {
+		var ratingPtr *float64
+		if tx.Class.AverageRating > 0 {
+			ratingPtr = &tx.Class.AverageRating
+		}
+
 		classResponses = append(classResponses, dto.ClassResponse{
 			ID:           tx.Class.ID.String(),
 			Name:         tx.Class.Name,
 			ThumbnailURL: tx.Class.ThumbnailURL,
-			MentorID:     tx.Class.TutorID.String(),
-			MentorName:   tx.Class.TutorProfile.Name,
 			Price:        tx.Class.Price,
+			Rating:       ratingPtr,
+			Mentor: dto.Mentor{
+				ID:                tx.Class.TutorID.String(),
+				Name:              tx.Class.TutorProfile.Name,
+				ProfilePictureURL: tx.Class.TutorProfile.ProfilePictureURL,
+				IsVerified:        tx.Class.TutorProfile.IsVerified,
+			},
 		})
 	}
 
@@ -121,13 +141,23 @@ func (s *classService) GetAllByTutorId(ctx context.Context, tutorId string, meta
 
 	classResponses := make([]dto.ClassResponse, 0, len(classes))
 	for _, class := range classes {
+		var ratingPtr *float64
+		if class.AverageRating > 0 {
+			ratingPtr = &class.AverageRating
+		}
+
 		classResponses = append(classResponses, dto.ClassResponse{
 			ID:           class.ID.String(),
 			Name:         class.Name,
 			ThumbnailURL: class.ThumbnailURL,
-			MentorID:     class.TutorID.String(),
-			MentorName:   class.TutorProfile.Name,
 			Price:        class.Price,
+			Rating:       ratingPtr,
+			Mentor: dto.Mentor{
+				ID:                class.TutorID.String(),
+				Name:              class.TutorProfile.Name,
+				ProfilePictureURL: class.TutorProfile.ProfilePictureURL,
+				IsVerified:        class.TutorProfile.IsVerified,
+			},
 		})
 	}
 
@@ -197,9 +227,13 @@ func (s *classService) GetById(ctx context.Context, classId string) (dto.ClassDe
 		Price:        class.Price,
 		Rating:       ratingPtr,
 		Reviews:      reviewResponses,
-		MentorID:     class.TutorID.String(),
-		MentorName:   class.TutorProfile.Name,
 		Schedules:    scheduleResponses,
+		Mentor: dto.Mentor{
+			ID:                class.TutorID.String(),
+			Name:              class.TutorProfile.Name,
+			ProfilePictureURL: class.TutorProfile.ProfilePictureURL,
+			IsVerified:        class.TutorProfile.IsVerified,
+		},
 	}, nil
 }
 
@@ -270,9 +304,13 @@ func (s *classService) Update(ctx context.Context, tutorId string, classId strin
 		ID:           updatedClass.ID.String(),
 		Name:         updatedClass.Name,
 		ThumbnailURL: updatedClass.ThumbnailURL,
-		MentorID:     updatedClass.TutorID.String(),
-		MentorName:   updatedClass.TutorProfile.Name,
-		Price:        updatedClass.Price,
+		Mentor: dto.Mentor{
+			ID:                updatedClass.TutorID.String(),
+			Name:              updatedClass.TutorProfile.Name,
+			ProfilePictureURL: updatedClass.TutorProfile.ProfilePictureURL,
+			IsVerified:        updatedClass.TutorProfile.IsVerified,
+		},
+		Price: updatedClass.Price,
 	}, nil
 }
 

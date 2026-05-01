@@ -49,10 +49,15 @@ func (r *classRepository) GetAll(ctx context.Context, tx *gorm.DB, metaReq meta.
 
 	var classes []entity.Class
 
-	tx = tx.WithContext(ctx).Model(entity.Class{})
+	tx = tx.WithContext(ctx).Model(entity.Class{}).
+		Select("class.*, COALESCE(avg_reviews.rating, 0) as average_rating").
+		Joins("LEFT JOIN (SELECT ct.class_id, AVG(rv.rating) as rating FROM reviews rv JOIN class_transactions ct ON ct.id = rv.transaction_id WHERE rv.transaction_type = ? GROUP BY ct.class_id) as avg_reviews ON avg_reviews.class_id = class.id", entity.ReviewTypeClass)
 
 	if err := WithFilters(tx, &metaReq,
-		AddModels(entity.Class{})).Find(&classes).Error; err != nil {
+		AddModels(entity.Class{}),
+		AddCustomField("rating", "COALESCE(avg_reviews.rating, 0) = ?", "COALESCE(avg_reviews.rating, 0)"),
+		AddCustomField("average_rating", "COALESCE(avg_reviews.rating, 0) = ?", "COALESCE(avg_reviews.rating, 0)"),
+	).Find(&classes).Error; err != nil {
 		return nil, metaReq, err
 	}
 

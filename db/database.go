@@ -18,7 +18,7 @@ func New() *gorm.DB {
 	DBPort := os.Getenv("DB_PORT")
 
 	DBDSN := fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%s",
+		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Jakarta",
 		DBHost, DBUser, DBPassword, DBName, DBPort,
 	)
 

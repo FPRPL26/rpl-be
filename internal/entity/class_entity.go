@@ -12,7 +12,8 @@ type Class struct {
 	Price        int64     `json:"price" gorm:"not null;default:0"`
 	Timestamp
 
-	TutorProfile TutorProfile `json:"tutor_profile" gorm:"foreignKey:TutorID"`
+	TutorProfile  TutorProfile `json:"tutor_profile" gorm:"foreignKey:TutorID"`
+	AverageRating float64      `json:"average_rating" gorm:"->"`
 }
 
 func (c *Class) TableName() string {

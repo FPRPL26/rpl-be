@@ -2,6 +2,13 @@ package dto
 
 import "github.com/google/uuid"
 
+type Mentor struct {
+	ID                string `json:"id"`
+	Name              string `json:"name"`
+	ProfilePictureURL string `json:"profile_picture_url"`
+	IsVerified        bool   `json:"is_verified"`
+}
+
 type CreateClassRequest struct {
 	Name         string `json:"name" binding:"required"`
 	Description  string `json:"description" binding:"required"`
@@ -15,12 +22,12 @@ type CreateClassResponse struct {
 }
 
 type ClassResponse struct {
-	ID           string `json:"id"`
-	Name         string `json:"name"`
-	ThumbnailURL string `json:"thumbnail_url"`
-	MentorID     string `json:"mentor_id"`
-	MentorName   string `json:"mentor_name"`
-	Price        int64  `json:"price"`
+	ID           string   `json:"id"`
+	Name         string   `json:"name"`
+	ThumbnailURL string   `json:"thumbnail_url"`
+	Price        int64    `json:"price"`
+	Rating       *float64 `json:"rating"`
+	Mentor       Mentor   `json:"mentor"`
 }
 
 type ClassDetailResponse struct {
@@ -32,8 +39,7 @@ type ClassDetailResponse struct {
 	Price        int64              `json:"price"`
 	Rating       *float64           `json:"rating"`
 	Reviews      []ReviewResponse   `json:"reviews"`
-	MentorID     string             `json:"mentor_id"`
-	MentorName   string             `json:"mentor_name"`
+	Mentor       Mentor             `json:"mentor"`
 	Schedules    []ScheduleResponse `json:"schedules"`
 }
 
