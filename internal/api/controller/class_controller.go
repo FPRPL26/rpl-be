@@ -14,6 +14,8 @@ type (
 	ClassController interface {
 		Create(ctx *gin.Context)
 		GetAll(ctx *gin.Context)
+		GetAllMyClass(ctx *gin.Context)
+		GetAllMyClassAsTutor(ctx *gin.Context)
 		GetById(ctx *gin.Context)
 		GetSchedules(ctx *gin.Context)
 		Update(ctx *gin.Context)
@@ -69,6 +71,38 @@ func (c *classController) GetAll(ctx *gin.Context) {
 	}
 
 	response.NewSuccess("Classes retrieved successfully", classes, metaRes).Send(ctx)
+}
+
+func (c *classController) GetAllMyClass(ctx *gin.Context) {
+	userId, err := utils.GetUserIdFromCtx(ctx)
+	if err != nil {
+		response.NewFailed("unauthorized", err).Send(ctx)
+		return
+	}
+
+	classes, metaRes, err := c.classService.GetAllEnrolled(ctx.Request.Context(), userId, meta.New(ctx))
+	if err != nil {
+		response.NewFailed("failed to get enrolled classes", err).Send(ctx)
+		return
+	}
+
+	response.NewSuccess("Enrolled classes retrieved successfully", classes, metaRes).Send(ctx)
+}
+
+func (c *classController) GetAllMyClassAsTutor(ctx *gin.Context) {
+	tutorId, err := utils.GetUserIdFromCtx(ctx)
+	if err != nil {
+		response.NewFailed("unauthorized", err).Send(ctx)
+		return
+	}
+
+	classes, metaRes, err := c.classService.GetAllByTutorId(ctx.Request.Context(), tutorId, meta.New(ctx))
+	if err != nil {
+		response.NewFailed("failed to get my classes", err).Send(ctx)
+		return
+	}
+
+	response.NewSuccess("My classes retrieved successfully", classes, metaRes).Send(ctx)
 }
 
 func (c *classController) GetById(ctx *gin.Context) {

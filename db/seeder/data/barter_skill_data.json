@@ -1,0 +1,22 @@
+[
+  {
+    "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+    "request_skills": 1,
+    "offered_skills": 2,
+    "name": "Graphic Design for Programming",
+    "description": "I want to learn programming and I can teach graphic design",
+    "accepted": false,
+    "tutor_profile_id": "2d07435b-75df-4784-a08d-dd241fb8c78f",
+    "chat_wa": "https://wa.me/628123456789"
+  },
+  {
+    "id": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
+    "request_skills": 4,
+    "offered_skills": 7,
+    "name": "UI/UX for Web Development",
+    "description": "Offering Web Dev skills in exchange for UI/UX lessons",
+    "accepted": false,
+    "tutor_profile_id": "2d07435b-75df-4784-a08d-dd241fb8c78f",
+    "chat_wa": "https://wa.me/628123456789"
+  }
+]

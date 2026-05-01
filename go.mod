@@ -11,6 +11,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
+	github.com/midtrans/midtrans-go v1.3.8
 	github.com/sirupsen/logrus v1.9.3
 	golang.org/x/crypto v0.43.0
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
@@ -18,10 +19,7 @@ require (
 	gorm.io/gorm v1.26.1
 )
 
-require (
-	github.com/midtrans/midtrans-go v1.3.8 // indirect
-	github.com/stretchr/testify v1.11.1 // indirect
-)
+require github.com/stretchr/testify v1.11.1 // indirect
 
 require (
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.11 // indirect

@@ -1,0 +1,12 @@
+[
+  {
+    "id": "a1a1a1a1-b2b2-c3c3-d4d4-e5e5e5e5e5e5",
+    "class_id": "e3e8f8e8-9e9e-4e4e-8e8e-e8e8f8e8f8e8",
+    "start_time": "2026-05-10T09:00:00Z",
+    "end_time": "2026-05-10T11:00:00Z",
+    "date": "2026-05-10T00:00:00Z",
+    "repeted": 0,
+    "max_student": 10,
+    "remaining": 9
+  }
+]

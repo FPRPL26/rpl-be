@@ -19,6 +19,8 @@ type (
 	ClassService interface {
 		Create(ctx context.Context, tutorId string, req dto.CreateClassRequest) (entity.Class, error)
 		GetAll(ctx context.Context, metaReq meta.Meta) ([]dto.ClassResponse, meta.Meta, error)
+		GetAllEnrolled(ctx context.Context, userId string, metaReq meta.Meta) ([]dto.ClassResponse, meta.Meta, error)
+		GetAllByTutorId(ctx context.Context, tutorId string, metaReq meta.Meta) ([]dto.ClassResponse, meta.Meta, error)
 		GetById(ctx context.Context, classId string) (dto.ClassDetailResponse, error)
 		GetSchedules(ctx context.Context, metaReq meta.Meta, classId string) ([]dto.ScheduleResponse, meta.Meta, error)
 		Update(ctx context.Context, tutorId string, classId string, req dto.UpdateClassRequest) (dto.ClassResponse, error)
@@ -29,13 +31,16 @@ type (
 	}
 
 	classService struct {
-		classRepo    repository.ClassRepository
-		scheduleRepo repository.ScheduleRepository
+		classRepo       repository.ClassRepository
+		scheduleRepo    repository.ScheduleRepository
+		transactionRepo repository.ClassTransactionRepository
+		reviewRepo      repository.ReviewRepository
+		db              *gorm.DB
 	}
 )
 
-func NewClass(classRepo repository.ClassRepository, scheduleRepo repository.ScheduleRepository) ClassService {
-	return &classService{classRepo, scheduleRepo}
+func NewClass(classRepo repository.ClassRepository, scheduleRepo repository.ScheduleRepository, transactionRepo repository.ClassTransactionRepository, reviewRepo repository.ReviewRepository, db *gorm.DB) ClassService {
+	return &classService{classRepo, scheduleRepo, transactionRepo, reviewRepo, db}
 }
 
 func (s *classService) Create(ctx context.Context, tutorId string, req dto.CreateClassRequest) (entity.Class, error) {
@@ -67,13 +72,92 @@ func (s *classService) GetAll(ctx context.Context, metaReq meta.Meta) ([]dto.Cla
 
 	classResponses := make([]dto.ClassResponse, 0, len(classes))
 	for _, class := range classes {
+		var ratingPtr *float64
+		if class.AverageRating > 0 {
+			ratingPtr = &class.AverageRating
+		}
+
 		classResponses = append(classResponses, dto.ClassResponse{
 			ID:           class.ID.String(),
 			Name:         class.Name,
 			ThumbnailURL: class.ThumbnailURL,
-			MentorID:     class.TutorID.String(),
-			MentorName:   class.TutorProfile.Name,
 			Price:        class.Price,
+			Rating:       ratingPtr,
+			Mentor: dto.Mentor{
+				ID:                class.TutorID.String(),
+				Name:              class.TutorProfile.Name,
+				ProfilePictureURL: class.TutorProfile.ProfilePictureURL,
+				IsVerified:        class.TutorProfile.IsVerified,
+			},
+		})
+	}
+
+	return classResponses, meta, nil
+}
+
+func (s *classService) GetAllEnrolled(ctx context.Context, userId string, metaReq meta.Meta) ([]dto.ClassResponse, meta.Meta, error) {
+	transactions, meta, err := s.transactionRepo.GetAllByUserId(ctx, nil, userId, metaReq, "Class", "Class.TutorProfile")
+	if err != nil {
+		return nil, meta, err
+	}
+
+	classResponses := make([]dto.ClassResponse, 0, len(transactions))
+	for _, tx := range transactions {
+		var ratingPtr *float64
+		if tx.Class.AverageRating > 0 {
+			ratingPtr = &tx.Class.AverageRating
+		}
+
+		classResponses = append(classResponses, dto.ClassResponse{
+			ID:           tx.Class.ID.String(),
+			Name:         tx.Class.Name,
+			ThumbnailURL: tx.Class.ThumbnailURL,
+			Price:        tx.Class.Price,
+			Rating:       ratingPtr,
+			Mentor: dto.Mentor{
+				ID:                tx.Class.TutorID.String(),
+				Name:              tx.Class.TutorProfile.Name,
+				ProfilePictureURL: tx.Class.TutorProfile.ProfilePictureURL,
+				IsVerified:        tx.Class.TutorProfile.IsVerified,
+			},
+		})
+	}
+
+	return classResponses, meta, nil
+}
+
+func (s *classService) GetAllByTutorId(ctx context.Context, tutorId string, metaReq meta.Meta) ([]dto.ClassResponse, meta.Meta, error) {
+	tutorUUID, err := uuid.Parse(tutorId)
+	if err != nil {
+		return nil, metaReq, err
+	}
+
+	tx := s.db.Where("tutor_id = ?", tutorUUID)
+
+	classes, meta, err := s.classRepo.GetAll(ctx, tx, metaReq, "TutorProfile")
+	if err != nil {
+		return nil, meta, err
+	}
+
+	classResponses := make([]dto.ClassResponse, 0, len(classes))
+	for _, class := range classes {
+		var ratingPtr *float64
+		if class.AverageRating > 0 {
+			ratingPtr = &class.AverageRating
+		}
+
+		classResponses = append(classResponses, dto.ClassResponse{
+			ID:           class.ID.String(),
+			Name:         class.Name,
+			ThumbnailURL: class.ThumbnailURL,
+			Price:        class.Price,
+			Rating:       ratingPtr,
+			Mentor: dto.Mentor{
+				ID:                class.TutorID.String(),
+				Name:              class.TutorProfile.Name,
+				ProfilePictureURL: class.TutorProfile.ProfilePictureURL,
+				IsVerified:        class.TutorProfile.IsVerified,
+			},
 		})
 	}
 
@@ -92,6 +176,27 @@ func (s *classService) GetById(ctx context.Context, classId string) (dto.ClassDe
 	chatWA := ""
 	if class.ChatWA != nil {
 		chatWA = *class.ChatWA
+	}
+
+	avgRating, err := s.reviewRepo.GetAverageRatingByClassId(ctx, nil, classId)
+	var ratingPtr *float64
+	if err == nil && avgRating > 0 {
+		ratingPtr = &avgRating
+	}
+
+	reviews, err := s.reviewRepo.GetLatestReviewsByClassId(ctx, nil, classId, 5)
+	reviewResponses := make([]dto.ReviewResponse, 0, len(reviews))
+	if err == nil {
+		for _, r := range reviews {
+			reviewResponses = append(reviewResponses, dto.ReviewResponse{
+				ID:        r.ID,
+				UserID:    r.UserID,
+				UserName:  r.User.Name,
+				Rating:    r.Rating,
+				Comment:   r.Comment,
+				CreatedAt: r.CreatedAt.Format(time.RFC3339),
+			})
+		}
 	}
 
 	schedules, _, err := s.scheduleRepo.GetAllByClassId(ctx, nil, meta.Default(), classId)
@@ -120,9 +225,15 @@ func (s *classService) GetById(ctx context.Context, classId string) (dto.ClassDe
 		ThumbnailURL: class.ThumbnailURL,
 		ChatWA:       chatWA,
 		Price:        class.Price,
-		MentorID:     class.TutorID.String(),
-		MentorName:   class.TutorProfile.Name,
+		Rating:       ratingPtr,
+		Reviews:      reviewResponses,
 		Schedules:    scheduleResponses,
+		Mentor: dto.Mentor{
+			ID:                class.TutorID.String(),
+			Name:              class.TutorProfile.Name,
+			ProfilePictureURL: class.TutorProfile.ProfilePictureURL,
+			IsVerified:        class.TutorProfile.IsVerified,
+		},
 	}, nil
 }
 
@@ -193,9 +304,13 @@ func (s *classService) Update(ctx context.Context, tutorId string, classId strin
 		ID:           updatedClass.ID.String(),
 		Name:         updatedClass.Name,
 		ThumbnailURL: updatedClass.ThumbnailURL,
-		MentorID:     updatedClass.TutorID.String(),
-		MentorName:   updatedClass.TutorProfile.Name,
-		Price:        updatedClass.Price,
+		Mentor: dto.Mentor{
+			ID:                updatedClass.TutorID.String(),
+			Name:              updatedClass.TutorProfile.Name,
+			ProfilePictureURL: updatedClass.TutorProfile.ProfilePictureURL,
+			IsVerified:        updatedClass.TutorProfile.IsVerified,
+		},
+		Price: updatedClass.Price,
 	}, nil
 }
 
