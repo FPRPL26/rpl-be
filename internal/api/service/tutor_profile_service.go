@@ -2,11 +2,15 @@ package service
 
 import (
 	"context"
+	"errors"
+	"net/http"
 
 	"github.com/FPRPL26/rpl-be/internal/api/repository"
 	"github.com/FPRPL26/rpl-be/internal/dto"
 	"github.com/FPRPL26/rpl-be/internal/entity"
+	myerror "github.com/FPRPL26/rpl-be/internal/pkg/error"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type (
@@ -28,6 +32,14 @@ func NewTutorService(repo repository.TutorProfileRepository) TutorService {
 }
 
 func (s *tutorService) CreateTutor(ctx context.Context, userID uuid.UUID, req dto.TutorRequest) (dto.TutorResponse, error) {
+	_, err := s.repo.GetByID(ctx, userID)
+	if err == nil {
+		return dto.TutorResponse{}, myerror.New("tutor profile already exists", http.StatusConflict)
+	}
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return dto.TutorResponse{}, err
+	}
+
 	tutor := &entity.TutorProfile{
 		ID:                userID,
 		Name:              req.Name,
