@@ -38,6 +38,7 @@ services:
 
 volumes:
   pgdata_dev:
+    name: rpl_be_unique_dev_volume
 
 networks:
   rpl-app-dev-net:
