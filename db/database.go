@@ -2,8 +2,9 @@ package db
 
 import (
 	"fmt"
-
 	"os"
+
+	"github.com/joho/godotenv"
 
 	mylog "github.com/FPRPL26/rpl-be/internal/pkg/logger"
 	"gorm.io/driver/postgres"
@@ -11,6 +12,8 @@ import (
 )
 
 func New() *gorm.DB {
+	_ = godotenv.Load(".env")
+
 	DBHost := os.Getenv("DB_HOST")
 	DBUser := os.Getenv("DB_USER")
 	DBPassword := os.Getenv("DB_PASS")
