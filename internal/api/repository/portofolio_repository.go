@@ -11,6 +11,7 @@ type (
 	PortofolioRepository interface {
 		Create(ctx context.Context, tx *gorm.DB, portofolio entity.Portofolio) (entity.Portofolio, error)
 		GetAll(ctx context.Context, tx *gorm.DB, tutorProfileID string) ([]entity.Portofolio, error)
+		GetAllByTutorProfileId(ctx context.Context, tx *gorm.DB, tutorProfileID string) ([]entity.Portofolio, error)
 		GetById(ctx context.Context, tx *gorm.DB, id string) (entity.Portofolio, error)
 		Update(ctx context.Context, tx *gorm.DB, portofolio entity.Portofolio) (entity.Portofolio, error)
 		Delete(ctx context.Context, tx *gorm.DB, portofolio entity.Portofolio) error
@@ -49,6 +50,19 @@ func (r *portofolioRepository) GetAll(ctx context.Context, tx *gorm.DB, tutorPro
 	}
 
 	if err := query.Find(&portofolios).Error; err != nil {
+		return nil, err
+	}
+
+	return portofolios, nil
+}
+
+func (r *portofolioRepository) GetAllByTutorProfileId(ctx context.Context, tx *gorm.DB, tutorProfileID string) ([]entity.Portofolio, error) {
+	if tx == nil {
+		tx = r.db
+	}
+
+	var portofolios []entity.Portofolio
+	if err := tx.WithContext(ctx).Where("tutor_profile_id = ?", tutorProfileID).Find(&portofolios).Error; err != nil {
 		return nil, err
 	}
 

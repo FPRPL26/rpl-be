@@ -15,6 +15,7 @@ type (
 	PortofolioService interface {
 		Create(ctx context.Context, tutorProfileID string, req dto.CreatePortofolioRequest) (dto.PortofolioResponse, error)
 		GetAll(ctx context.Context, tutorProfileID string) ([]dto.PortofolioResponse, error)
+		GetAllByTutorProfile(ctx context.Context, tutorProfileID string) ([]dto.PortofolioResponse, error)
 		GetById(ctx context.Context, id string) (dto.PortofolioResponse, error)
 		Update(ctx context.Context, tutorProfileID string, id string, req dto.UpdatePortofolioRequest) (dto.PortofolioResponse, error)
 		Delete(ctx context.Context, tutorProfileID string, id string) error
@@ -54,6 +55,20 @@ func (s *portofolioService) Create(ctx context.Context, tutorProfileID string, r
 
 func (s *portofolioService) GetAll(ctx context.Context, tutorProfileID string) ([]dto.PortofolioResponse, error) {
 	portofolios, err := s.repo.GetAll(ctx, nil, tutorProfileID)
+	if err != nil {
+		return nil, err
+	}
+
+	responses := make([]dto.PortofolioResponse, 0, len(portofolios))
+	for _, p := range portofolios {
+		responses = append(responses, s.mapToResponse(p))
+	}
+
+	return responses, nil
+}
+
+func (s *portofolioService) GetAllByTutorProfile(ctx context.Context, tutorProfileID string) ([]dto.PortofolioResponse, error) {
+	portofolios, err := s.repo.GetAllByTutorProfileId(ctx, nil, tutorProfileID)
 	if err != nil {
 		return nil, err
 	}

@@ -13,6 +13,7 @@ type (
 	PortofolioController interface {
 		Create(ctx *gin.Context)
 		GetAll(ctx *gin.Context)
+		GetByTutorProfile(ctx *gin.Context)
 		GetById(ctx *gin.Context)
 		GetMyPortofolios(ctx *gin.Context)
 		Update(ctx *gin.Context)
@@ -55,6 +56,18 @@ func (c *portofolioController) GetAll(ctx *gin.Context) {
 	tutorProfileID := ctx.Query("tutor_profile_id")
 
 	res, err := c.service.GetAll(ctx.Request.Context(), tutorProfileID)
+	if err != nil {
+		response.NewFailed("failed get portofolios", err).Send(ctx)
+		return
+	}
+
+	response.NewSuccess("Portofolios retrieved successfully", dto.PortofolioListResponse{Data: res}).Send(ctx)
+}
+
+func (c *portofolioController) GetByTutorProfile(ctx *gin.Context) {
+	tutorProfileID := ctx.Param("tutor_profile_id")
+
+	res, err := c.service.GetAllByTutorProfile(ctx.Request.Context(), tutorProfileID)
 	if err != nil {
 		response.NewFailed("failed get portofolios", err).Send(ctx)
 		return

@@ -11,6 +11,7 @@ func Portofolio(app *gin.Engine, c controller.PortofolioController, middleware m
 	{
 		routes.GET("", c.GetAll)
 		routes.GET("/me", middleware.Authenticate(), c.GetMyPortofolios)
+		routes.GET("/tutor/:tutor_profile_id", c.GetByTutorProfile)
 		routes.GET("/:id", c.GetById)
 
 		protected := routes.Group("")
