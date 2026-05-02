@@ -74,11 +74,16 @@ func (s *classRequestTutorApplicationService) Apply(ctx context.Context, userID 
 		return dto.ClassRequestTutorApplicationResponse{}, myerror.New("invalid request ID", http.StatusBadRequest)
 	}
 
-	if _, err := s.classRequestRepo.GetById(ctx, nil, req.RequestID); err != nil {
+	classRequest, err := s.classRequestRepo.GetById(ctx, nil, req.RequestID)
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return dto.ClassRequestTutorApplicationResponse{}, myerror.New("class request not found", http.StatusNotFound)
 		}
 		return dto.ClassRequestTutorApplicationResponse{}, err
+	}
+
+	if classRequest.UserID.String() == tutorProfileID.String() {
+		return dto.ClassRequestTutorApplicationResponse{}, myerror.New("cannot apply to your own request", http.StatusForbidden)
 	}
 
 	if _, err := s.applicationRepo.GetByTutorAndRequest(ctx, nil, req.TutorProfileID, req.RequestID); err == nil {
