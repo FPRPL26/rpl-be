@@ -10,22 +10,25 @@ type ClassRequestStatus string
 
 const (
 	ClassRequestStatusWaiting  ClassRequestStatus = "WAITING"
+	ClassRequestStatusAssigned ClassRequestStatus = "ASSIGNED"
 	ClassRequestStatusFinished ClassRequestStatus = "FINISHED"
 )
 
 type ClassRequest struct {
-	ID          uuid.UUID          `json:"id" gorm:"type:uuid;primaryKey;default:uuid_generate_v4()"`
-	UserID      uuid.UUID          `json:"user_id" gorm:"type:uuid;not null"`
-	Name        string             `json:"name" gorm:"not null"`
-	Description string             `json:"description" gorm:"not null"`
-	Start       time.Time          `json:"start" gorm:"type:timestamp without time zone;not null"`
-	End         time.Time          `json:"end" gorm:"type:timestamp without time zone;not null"`
-	Date        time.Time          `json:"date" gorm:"type:date;not null"`
-	Status      ClassRequestStatus `json:"status" gorm:"not null"`
-	Price       int64              `json:"price" gorm:"not null"`
-	ChatWA      string             `json:"chat_wa" gorm:"not null"`
+	ID             uuid.UUID          `json:"id" gorm:"type:uuid;primaryKey;default:uuid_generate_v4()"`
+	UserID         uuid.UUID          `json:"user_id" gorm:"type:uuid;not null"`
+	Name           string             `json:"name" gorm:"not null"`
+	Description    string             `json:"description" gorm:"not null"`
+	Start          time.Time          `json:"start" gorm:"type:timestamp without time zone;not null"`
+	End            time.Time          `json:"end" gorm:"type:timestamp without time zone;not null"`
+	Date           time.Time          `json:"date" gorm:"type:date;not null"`
+	Status         ClassRequestStatus `json:"status" gorm:"not null"`
+	Price          int64              `json:"price" gorm:"not null"`
+	ChatWA         string             `json:"chat_wa" gorm:"not null"`
+	TutorProfileID uuid.UUID          `json:"tutor_profile_id" gorm:"type:uuid"`
 
-	User User `json:"user" gorm:"foreignKey:UserID"`
+	User         User         `json:"user" gorm:"foreignKey:UserID"`
+	TutorProfile TutorProfile `json:"tutor_profile" gorm:"foreignKey:TutorProfileID"`
 }
 
 func (c *ClassRequest) TableName() string {
