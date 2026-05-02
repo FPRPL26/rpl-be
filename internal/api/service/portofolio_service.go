@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"errors"
+	"net/http"
 
 	"github.com/FPRPL26/rpl-be/internal/api/repository"
 	"github.com/FPRPL26/rpl-be/internal/dto"
@@ -34,7 +36,7 @@ func NewPortofolio(repo repository.PortofolioRepository, db *gorm.DB) Portofolio
 func (s *portofolioService) Create(ctx context.Context, tutorProfileID string, req dto.CreatePortofolioRequest) (dto.PortofolioResponse, error) {
 	tutorUUID, err := uuid.Parse(tutorProfileID)
 	if err != nil {
-		return dto.PortofolioResponse{}, err
+		return dto.PortofolioResponse{}, myerror.New("invalid tutor", http.StatusBadRequest)
 	}
 
 	portofolio := entity.Portofolio{
@@ -84,6 +86,9 @@ func (s *portofolioService) GetAllByTutorProfile(ctx context.Context, tutorProfi
 func (s *portofolioService) GetById(ctx context.Context, id string) (dto.PortofolioResponse, error) {
 	portofolio, err := s.repo.GetById(ctx, nil, id)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return dto.PortofolioResponse{}, myerror.New("portofolio not found", http.StatusNotFound)
+		}
 		return dto.PortofolioResponse{}, err
 	}
 

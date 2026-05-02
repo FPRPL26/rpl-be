@@ -32,7 +32,7 @@ func (r *tutorProfileRepository) Create(ctx context.Context, profile *entity.Tut
 
 func (r *tutorProfileRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.TutorProfile, error) {
 	var profile entity.TutorProfile
-	err := r.db.WithContext(ctx).Preload("User").First(&profile, "id = ?", id).Error
+	err := r.db.WithContext(ctx).Preload("User").Preload("Portofolios").First(&profile, "id = ?", id).Error
 	if err != nil {
 		return nil, err
 	}

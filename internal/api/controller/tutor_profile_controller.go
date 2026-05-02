@@ -1,8 +1,6 @@
 package controller
 
 import (
-	"strconv"
-
 	"github.com/FPRPL26/rpl-be/internal/api/service"
 	"github.com/FPRPL26/rpl-be/internal/dto"
 	myerror "github.com/FPRPL26/rpl-be/internal/pkg/error"
@@ -15,10 +13,11 @@ import (
 type (
 	TutorController interface {
 		Create(ctx *gin.Context)
-		Update(ctx *gin.Context)
 		GetByID(ctx *gin.Context)
-		Delete(ctx *gin.Context)
-		List(ctx *gin.Context)
+		Me(ctx *gin.Context)
+		Update(ctx *gin.Context)
+		// Delete(ctx *gin.Context)
+		// List(ctx *gin.Context)
 	}
 
 	tutorController struct {
@@ -60,12 +59,18 @@ func (c *tutorController) Create(ctx *gin.Context) {
 }
 
 func (c *tutorController) Update(ctx *gin.Context) {
-	idStr := ctx.Param("id")
-	id, err := uuid.Parse(idStr)
+	userIDStr, err := utils.GetUserIdFromCtx(ctx)
 	if err != nil {
-		response.NewFailed("invalid id format", err).Send(ctx)
+		response.NewFailed("unauthorized", err).Send(ctx)
 		return
 	}
+
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		response.NewFailed("invalid user_id format", err).Send(ctx)
+		return
+	}
+
 	var req dto.TutorUpdateRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		err = myerror.GetErrBodyRequest(err, dto.TutorUpdateRequest{})
@@ -73,7 +78,7 @@ func (c *tutorController) Update(ctx *gin.Context) {
 		return
 	}
 
-	res, err := c.service.UpdateTutor(ctx.Request.Context(), id, req)
+	res, err := c.service.UpdateTutor(ctx.Request.Context(), userID, req)
 	if err != nil {
 		response.NewFailed("failed update tutor", err).Send(ctx)
 		return
@@ -98,29 +103,51 @@ func (c *tutorController) GetByID(ctx *gin.Context) {
 	response.NewSuccess("Tutor retrieved successfully", res).Send(ctx)
 }
 
-func (c *tutorController) Delete(ctx *gin.Context) {
-	idStr := ctx.Param("id")
-	id, err := uuid.Parse(idStr)
+func (c *tutorController) Me(ctx *gin.Context) {
+	userIDStr, err := utils.GetUserIdFromCtx(ctx)
 	if err != nil {
-		response.NewFailed("invalid id format", err).Send(ctx)
-		return
-	}
-	if err := c.service.DeleteTutor(ctx.Request.Context(), id); err != nil {
-		response.NewFailed("failed to delete tutor", err).Send(ctx)
+		response.NewFailed("unauthorized", err).Send(ctx)
 		return
 	}
 
-	response.NewSuccess("Tutor deleted successfully", nil).Send(ctx)
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		response.NewFailed("invalid user_id format", err).Send(ctx)
+		return
+	}
+
+	res, err := c.service.GetTutorByID(ctx.Request.Context(), userID)
+	if err != nil {
+		response.NewFailed("failed get tutor", err).Send(ctx)
+		return
+	}
+
+	response.NewSuccess("Tutor retrieved successfully", res).Send(ctx)
 }
 
-func (c *tutorController) List(ctx *gin.Context) {
-	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
-	offset, _ := strconv.Atoi(ctx.DefaultQuery("offset", "0"))
-	res, err := c.service.ListTutors(ctx.Request.Context(), limit, offset)
-	if err != nil {
-		response.NewFailed("failed to list tutors", err).Send(ctx)
-		return
-	}
+// func (c *tutorController) Delete(ctx *gin.Context) {
+// 	idStr := ctx.Param("id")
+// 	id, err := uuid.Parse(idStr)
+// 	if err != nil {
+// 		response.NewFailed("invalid id format", err).Send(ctx)
+// 		return
+// 	}
+// 	if err := c.service.DeleteTutor(ctx.Request.Context(), id); err != nil {
+// 		response.NewFailed("failed to delete tutor", err).Send(ctx)
+// 		return
+// 	}
 
-	response.NewSuccess("Tutors retrieved successfully", res).Send(ctx)
-}
+// 	response.NewSuccess("Tutor deleted successfully", nil).Send(ctx)
+// }
+
+// func (c *tutorController) List(ctx *gin.Context) {
+// 	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+// 	offset, _ := strconv.Atoi(ctx.DefaultQuery("offset", "0"))
+// 	res, err := c.service.ListTutors(ctx.Request.Context(), limit, offset)
+// 	if err != nil {
+// 		response.NewFailed("failed to list tutors", err).Send(ctx)
+// 		return
+// 	}
+
+// 	response.NewSuccess("Tutors retrieved successfully", res).Send(ctx)
+// }

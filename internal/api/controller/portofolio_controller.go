@@ -101,7 +101,7 @@ func (c *portofolioController) GetMyPortofolios(ctx *gin.Context) {
 		return
 	}
 
-	response.NewSuccess("Portofolios retrieved successfully", dto.PortofolioListResponse{Data: res}).Send(ctx)
+	response.NewSuccess("Portofolios retrieved successfully", res).Send(ctx)
 }
 
 func (c *portofolioController) Update(ctx *gin.Context) {

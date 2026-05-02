@@ -7,11 +7,12 @@ type TutorProfile struct {
 	Name              string    `json:"name" gorm:"not null"`
 	ProfilePictureURL string    `json:"profile_picture_url"`
 	Semester          int       `json:"semester" gorm:"not null"`
-	Jurusan           int64     `json:"jurusan" gorm:"not null"`
+	Jurusan           string    `json:"jurusan" gorm:"not null"`
 	Rating            float64   `json:"rating" gorm:"type:decimal(8,2);not null"`
 	IsVerified        bool      `json:"is_verified" gorm:"not null"`
 
-	User User `json:"user" gorm:"foreignKey:ID;references:ID;constraint:-"`
+	User        User         `json:"user" gorm:"foreignKey:ID;references:ID;constraint:-"`
+	Portofolios []Portofolio `json:"portofolios" gorm:"foreignKey:TutorProfileID;references:ID"`
 }
 
 func (t *TutorProfile) TableName() string {

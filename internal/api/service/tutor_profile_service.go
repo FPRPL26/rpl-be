@@ -16,10 +16,10 @@ import (
 type (
 	TutorService interface {
 		CreateTutor(ctx context.Context, userID uuid.UUID, req dto.TutorRequest) (dto.TutorResponse, error)
-		UpdateTutor(ctx context.Context, id uuid.UUID, req dto.TutorUpdateRequest) (dto.TutorResponse, error)
 		GetTutorByID(ctx context.Context, id uuid.UUID) (dto.TutorResponse, error)
-		DeleteTutor(ctx context.Context, id uuid.UUID) error
-		ListTutors(ctx context.Context, limit, offset int) (dto.TutorListResponse, error)
+		UpdateTutor(ctx context.Context, id uuid.UUID, req dto.TutorUpdateRequest) (dto.TutorResponse, error)
+		// DeleteTutor(ctx context.Context, id uuid.UUID) error
+		// ListTutors(ctx context.Context, limit, offset int) (dto.TutorListResponse, error)
 	}
 
 	tutorService struct {
@@ -31,13 +31,37 @@ func NewTutorService(repo repository.TutorProfileRepository) TutorService {
 	return &tutorService{repo: repo}
 }
 
-func (s *tutorService) CreateTutor(ctx context.Context, userID uuid.UUID, req dto.TutorRequest) (dto.TutorResponse, error) {
-	_, err := s.repo.GetByID(ctx, userID)
-	if err == nil {
-		return dto.TutorResponse{}, myerror.New("tutor profile already exists", http.StatusConflict)
+func (s *tutorService) mapToResponse(tutor *entity.TutorProfile) dto.TutorResponse {
+	portofolios := make([]dto.PortofolioResponse, len(tutor.Portofolios))
+	for i, p := range tutor.Portofolios {
+		portofolios[i] = dto.PortofolioResponse{
+			ID:             p.ID.String(),
+			Name:           p.Name,
+			Description:    p.Description,
+			FileURL:        p.FileURL,
+			TutorProfileID: p.TutorProfileID.String(),
+		}
 	}
+
+	return dto.TutorResponse{
+		ID:                tutor.ID,
+		Name:              tutor.Name,
+		ProfilePictureURL: tutor.ProfilePictureURL,
+		Semester:          tutor.Semester,
+		Jurusan:           tutor.Jurusan,
+		Rating:            tutor.Rating,
+		IsVerified:        tutor.IsVerified,
+		Portofolios:       portofolios,
+	}
+}
+
+func (s *tutorService) CreateTutor(ctx context.Context, userID uuid.UUID, req dto.TutorRequest) (dto.TutorResponse, error) {
+	tutorExisted, err := s.repo.GetByID(ctx, userID)
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		return dto.TutorResponse{}, err
+	}
+	if tutorExisted != nil {
+		return dto.TutorResponse{}, myerror.New("tutor profile already exists", http.StatusConflict)
 	}
 
 	tutor := &entity.TutorProfile{
@@ -59,6 +83,9 @@ func (s *tutorService) CreateTutor(ctx context.Context, userID uuid.UUID, req dt
 func (s *tutorService) UpdateTutor(ctx context.Context, id uuid.UUID, req dto.TutorUpdateRequest) (dto.TutorResponse, error) {
 	tutor, err := s.repo.GetByID(ctx, id)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return dto.TutorResponse{}, myerror.New("tutor not found", http.StatusNotFound)
+		}
 		return dto.TutorResponse{}, err
 	}
 
@@ -68,7 +95,7 @@ func (s *tutorService) UpdateTutor(ctx context.Context, id uuid.UUID, req dto.Tu
 	if req.Semester > 0 {
 		tutor.Semester = req.Semester
 	}
-	if req.Jurusan > 0 {
+	if req.Jurusan != "" {
 		tutor.Jurusan = req.Jurusan
 	}
 	if req.IsVerified != nil {
@@ -88,50 +115,40 @@ func (s *tutorService) UpdateTutor(ctx context.Context, id uuid.UUID, req dto.Tu
 
 func (s *tutorService) GetTutorByID(ctx context.Context, id uuid.UUID) (dto.TutorResponse, error) {
 	tutor, err := s.repo.GetByID(ctx, id)
+
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return dto.TutorResponse{}, myerror.New("tutor not found", http.StatusNotFound)
+		}
 		return dto.TutorResponse{}, err
 	}
+
 	return s.mapToResponse(tutor), nil
 }
 
-func (s *tutorService) DeleteTutor(ctx context.Context, id uuid.UUID) error {
-	_, err := s.repo.GetByID(ctx, id)
-	if err != nil {
-		return err
-	}
-	return s.repo.Delete(ctx, id)
-}
+// func (s *tutorService) DeleteTutor(ctx context.Context, id uuid.UUID) error {
+// 	_, err := s.repo.GetByID(ctx, id)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return s.repo.Delete(ctx, id)
+// }
 
-func (s *tutorService) ListTutors(ctx context.Context, limit, offset int) (dto.TutorListResponse, error) {
-	tutors, err := s.repo.List(ctx, limit, offset)
-	if err != nil {
-		return dto.TutorListResponse{}, err
-	}
+// func (s *tutorService) ListTutors(ctx context.Context, limit, offset int) (dto.TutorListResponse, error) {
+// 	tutors, err := s.repo.List(ctx, limit, offset)
+// 	if err != nil {
+// 		return dto.TutorListResponse{}, err
+// 	}
 
-	data := make([]dto.TutorResponse, len(tutors))
-	for i, t := range tutors {
-		data[i] = s.mapToResponse(&t)
-	}
+// 	data := make([]dto.TutorResponse, len(tutors))
+// 	for i, t := range tutors {
+// 		data[i] = s.mapToResponse(&t)
+// 	}
 
-	return dto.TutorListResponse{
-		Data:   data,
-		Limit:  limit,
-		Offset: offset,
-		Total:  int64(len(data)),
-	}, nil
-}
-
-func (s *tutorService) mapToResponse(t *entity.TutorProfile) dto.TutorResponse {
-	return dto.TutorResponse{
-		ID:                t.ID,
-		Name:              t.Name,
-		ProfilePictureURL: t.ProfilePictureURL,
-		Semester:          t.Semester,
-		Jurusan:           t.Jurusan,
-		Rating:            t.Rating,
-		IsVerified:        t.IsVerified,
-		User: dto.UserResponse{
-			Email: t.User.Email,
-		},
-	}
-}
+// 	return dto.TutorListResponse{
+// 		Data:   data,
+// 		Limit:  limit,
+// 		Offset: offset,
+// 		Total:  int64(len(data)),
+// 	}, nil
+// }

@@ -4,7 +4,7 @@
     "name": "user",
     "profile_picture_url": "https://example.com/profile.jpg",
     "semester": 4,
-    "jurusan": 1,
+    "jurusan": "Teknik Informatika",
     "rating": 4.5,
     "is_verified": true
   }
