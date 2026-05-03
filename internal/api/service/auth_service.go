@@ -12,6 +12,7 @@ import (
 	myerror "github.com/FPRPL26/rpl-be/internal/pkg/error"
 	myjwt "github.com/FPRPL26/rpl-be/internal/pkg/jwt"
 	"github.com/FPRPL26/rpl-be/internal/utils"
+	"github.com/google/uuid"
 
 	"net/http"
 	"os"
@@ -36,6 +37,7 @@ type (
 	authService struct {
 		userRepository         repository.UserRepository
 		refreshTokenRepository repository.RefreshTokenRepository
+		tutorProfileRepository repository.TutorProfileRepository
 		mailService            mailer.Mailer
 		db                     *gorm.DB
 	}
@@ -43,11 +45,13 @@ type (
 
 func NewAuth(userRepository repository.UserRepository,
 	refreshTokenRepository repository.RefreshTokenRepository,
+	tutorProfileRepository repository.TutorProfileRepository,
 	mailService mailer.Mailer,
 	db *gorm.DB) AuthService {
 	return &authService{
 		userRepository:         userRepository,
 		refreshTokenRepository: refreshTokenRepository,
+		tutorProfileRepository: tutorProfileRepository,
 		mailService:            mailService,
 		db:                     db,
 	}
@@ -379,12 +383,24 @@ func (s *authService) GetMe(ctx context.Context, userId string) (dto.GetMe, erro
 		return dto.GetMe{}, err
 	}
 
+	userUUID, err := uuid.Parse(userId)
+	if err != nil {
+		return dto.GetMe{}, err
+	}
+
+	isTutor := false
+	tutor, err := s.tutorProfileRepository.GetByID(ctx, userUUID)
+	if err == nil && tutor != nil {
+		isTutor = true
+	}
+
 	return dto.GetMe{
 		PersonalInfo: dto.PersonalInfo{
-			ID:    userId,
-			Name:  user.Name,
-			Email: user.Email,
-			Role:  string(user.Role),
+			ID:      userId,
+			Name:    user.Name,
+			Email:   user.Email,
+			Role:    string(user.Role),
+			IsTutor: isTutor,
 		},
 	}, nil
 }

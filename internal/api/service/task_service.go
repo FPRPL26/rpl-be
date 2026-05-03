@@ -19,12 +19,13 @@ type (
 	}
 
 	taskService struct {
-		taskRepo repository.TaskRepository
+		taskRepo  repository.TaskRepository
+		mediaRepo repository.MediaAssetRepository
 	}
 )
 
-func NewTask(taskRepo repository.TaskRepository) TaskService {
-	return &taskService{taskRepo}
+func NewTask(taskRepo repository.TaskRepository, mediaRepo repository.MediaAssetRepository) TaskService {
+	return &taskService{taskRepo, mediaRepo}
 }
 
 func (s *taskService) Create(ctx context.Context, req dto.CreateTaskRequest) (entity.Task, error) {
@@ -36,6 +37,12 @@ func (s *taskService) Create(ctx context.Context, req dto.CreateTaskRequest) (en
 	})
 	if err != nil {
 		return entity.Task{}, err
+	}
+
+	if req.PhotoUrl != nil {
+		if err := s.mediaRepo.MarkAsUsed(*req.PhotoUrl); err != nil {
+			return taskCreateResult, err
+		}
 	}
 
 	return taskCreateResult, nil
@@ -55,6 +62,11 @@ func (s *taskService) Update(ctx context.Context, taskId string, req dto.UpdateT
 		return entity.Task{}, err
 	}
 
+	var oldPhotoURL string
+	if task.PhotoUrl != nil {
+		oldPhotoURL = *task.PhotoUrl
+	}
+
 	task.PhotoUrl = req.PhotoUrl
 	task.Description = req.Description
 	task.Deadline = req.Deadline
@@ -63,6 +75,13 @@ func (s *taskService) Update(ctx context.Context, taskId string, req dto.UpdateT
 	updateTaskResult, err := s.taskRepo.Update(ctx, nil, task)
 	if err != nil {
 		return entity.Task{}, err
+	}
+
+	if req.PhotoUrl != nil && *req.PhotoUrl != oldPhotoURL {
+		s.mediaRepo.MarkAsUnused(oldPhotoURL)
+		s.mediaRepo.MarkAsUsed(*req.PhotoUrl)
+	} else if req.PhotoUrl == nil && oldPhotoURL != "" {
+		s.mediaRepo.MarkAsUnused(oldPhotoURL)
 	}
 
 	return updateTaskResult, nil
@@ -74,5 +93,12 @@ func (s *taskService) Delete(ctx context.Context, taskId string) error {
 		return err
 	}
 
-	return s.taskRepo.Delete(ctx, nil, task)
+	if err := s.taskRepo.Delete(ctx, nil, task); err != nil {
+		return err
+	}
+
+	if task.PhotoUrl != nil {
+		s.mediaRepo.MarkAsUnused(*task.PhotoUrl)
+	}
+	return nil
 }

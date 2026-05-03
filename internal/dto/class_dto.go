@@ -46,7 +46,7 @@ type ClassDetailResponse struct {
 type UpdateClassRequest struct {
 	Name         string `json:"name"`
 	Description  string `json:"description"`
-	ThumbnailURL string `json:"thumnail_url"`
+	ThumbnailURL string `json:"thumbnail_url"`
 	ChatWA       string `json:"chat_wa"`
 	Price        int64  `json:"price"`
 }

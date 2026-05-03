@@ -53,12 +53,13 @@ func NewRest() RestConfig {
 		skillRepository                        repository.SkillRepository                        = repository.NewSkillRepository(db)
 		reviewRepository                       repository.ReviewRepository                       = repository.NewReviewRepository(db)
 		portofolioRepository                   repository.PortofolioRepository                   = repository.NewPortofolioRepository(db)
+		mediaAssetRepository                   repository.MediaAssetRepository                   = repository.NewMediaAsset(db)
 
 		//=========== (SERVICE) ===========//
-		authService                         service.AuthService                         = service.NewAuth(userRepository, refreshTokenRepository, mailerService, db)
-		taskService                         service.TaskService                         = service.NewTask(taskRepository)
-		classService                        service.ClassService                        = service.NewClass(classRepository, scheduleRepository, transactionRepository, reviewRepository, db)
-		tutorProfileService                 service.TutorService                        = service.NewTutorService(tutorProfileRepository)
+		authService                         service.AuthService                         = service.NewAuth(userRepository, refreshTokenRepository, tutorProfileRepository, mailerService, db)
+		taskService                         service.TaskService                         = service.NewTask(taskRepository, mediaAssetRepository)
+		classService                        service.ClassService                        = service.NewClass(classRepository, scheduleRepository, transactionRepository, reviewRepository, mediaAssetRepository, db)
+		tutorProfileService                 service.TutorService                        = service.NewTutorService(tutorProfileRepository, mediaAssetRepository)
 		classRequestService                 service.ClassRequestService                 = service.NewClassRequestService(userClassRequestRepository)
 		classRequestTransactionService      service.ClassRequestTransactionService      = service.NewClassRequestTransactionService(db, classRequestTransactionRepo, userClassRequestRepository, tutorProfileRepository, classRequestTutorApplicationRepository, userRepository, midtransService)
 		classRequestTutorApplicationService service.ClassRequestTutorApplicationService = service.NewClassRequestTutorApplicationService(db, classRequestTutorApplicationRepository, userClassRequestRepository, tutorProfileRepository, userRepository)
@@ -66,7 +67,7 @@ func NewRest() RestConfig {
 		skillService                        service.SkillService                        = service.NewSkillService(skillRepository)
 		transactionService                  service.ClassTransactionService             = service.NewClassTransactionService(db, transactionRepository, scheduleRepository, classRepository, userRepository, midtransService)
 		reviewService                       service.ReviewService                       = service.NewReviewService(reviewRepository, transactionRepository, barterTransactionRepository, classRequestTransactionRepo)
-		portofolioService                   service.PortofolioService                   = service.NewPortofolio(portofolioRepository, db)
+		portofolioService                   service.PortofolioService                   = service.NewPortofolio(portofolioRepository, mediaAssetRepository, db)
 		// userService                   service.UserService                   = service.NewUser(userRepository, userDisciplineRepository, disciplineGroupConsolidatorRepository, disciplineListDocumentConsolidatorRepository, packageRepository, db)
 
 		//=========== (CONTROLLER) ===========//

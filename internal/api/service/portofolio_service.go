@@ -24,13 +24,14 @@ type (
 	}
 
 	portofolioService struct {
-		repo repository.PortofolioRepository
-		db   *gorm.DB
+		repo      repository.PortofolioRepository
+		mediaRepo repository.MediaAssetRepository
+		db        *gorm.DB
 	}
 )
 
-func NewPortofolio(repo repository.PortofolioRepository, db *gorm.DB) PortofolioService {
-	return &portofolioService{repo: repo, db: db}
+func NewPortofolio(repo repository.PortofolioRepository, mediaRepo repository.MediaAssetRepository, db *gorm.DB) PortofolioService {
+	return &portofolioService{repo: repo, mediaRepo: mediaRepo, db: db}
 }
 
 func (s *portofolioService) Create(ctx context.Context, tutorProfileID string, req dto.CreatePortofolioRequest) (dto.PortofolioResponse, error) {
@@ -50,6 +51,10 @@ func (s *portofolioService) Create(ctx context.Context, tutorProfileID string, r
 	created, err := s.repo.Create(ctx, nil, portofolio)
 	if err != nil {
 		return dto.PortofolioResponse{}, err
+	}
+
+	if err := s.mediaRepo.MarkAsUsed(req.FileURL); err != nil {
+		return s.mapToResponse(created), err
 	}
 
 	return s.mapToResponse(created), nil
@@ -105,6 +110,8 @@ func (s *portofolioService) Update(ctx context.Context, tutorProfileID string, i
 		return dto.PortofolioResponse{}, myerror.New("unauthorized to update portofolio", 403)
 	}
 
+	oldFileURL := portofolio.FileURL
+
 	if req.Name != "" {
 		portofolio.Name = req.Name
 	}
@@ -120,6 +127,11 @@ func (s *portofolioService) Update(ctx context.Context, tutorProfileID string, i
 		return dto.PortofolioResponse{}, err
 	}
 
+	if req.FileURL != "" && req.FileURL != oldFileURL {
+		s.mediaRepo.MarkAsUnused(oldFileURL)
+		s.mediaRepo.MarkAsUsed(req.FileURL)
+	}
+
 	return s.mapToResponse(updated), nil
 }
 
@@ -133,7 +145,12 @@ func (s *portofolioService) Delete(ctx context.Context, tutorProfileID string, i
 		return myerror.New("unauthorized to delete portofolio", 403)
 	}
 
-	return s.repo.Delete(ctx, nil, portofolio)
+	if err := s.repo.Delete(ctx, nil, portofolio); err != nil {
+		return err
+	}
+
+	s.mediaRepo.MarkAsUnused(portofolio.FileURL)
+	return nil
 }
 
 func (s *portofolioService) mapToResponse(portofolio entity.Portofolio) dto.PortofolioResponse {

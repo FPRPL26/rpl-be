@@ -23,12 +23,13 @@ type (
 	}
 
 	tutorService struct {
-		repo repository.TutorProfileRepository
+		repo      repository.TutorProfileRepository
+		mediaRepo repository.MediaAssetRepository
 	}
 )
 
-func NewTutorService(repo repository.TutorProfileRepository) TutorService {
-	return &tutorService{repo: repo}
+func NewTutorService(repo repository.TutorProfileRepository, mediaRepo repository.MediaAssetRepository) TutorService {
+	return &tutorService{repo: repo, mediaRepo: mediaRepo}
 }
 
 func (s *tutorService) mapToResponse(tutor *entity.TutorProfile) dto.TutorResponse {
@@ -77,6 +78,10 @@ func (s *tutorService) CreateTutor(ctx context.Context, userID uuid.UUID, req dt
 		return dto.TutorResponse{}, err
 	}
 
+	if err := s.mediaRepo.MarkAsUsed(req.ProfilePictureURL); err != nil {
+		return s.mapToResponse(tutor), err
+	}
+
 	return s.mapToResponse(tutor), nil
 }
 
@@ -88,6 +93,8 @@ func (s *tutorService) UpdateTutor(ctx context.Context, id uuid.UUID, req dto.Tu
 		}
 		return dto.TutorResponse{}, err
 	}
+
+	oldProfilePictureURL := tutor.ProfilePictureURL
 
 	if req.Name != "" {
 		tutor.Name = req.Name
@@ -108,6 +115,11 @@ func (s *tutorService) UpdateTutor(ctx context.Context, id uuid.UUID, req dto.Tu
 
 	if err := s.repo.Update(ctx, tutor); err != nil {
 		return dto.TutorResponse{}, err
+	}
+
+	if req.ProfilePictureURL != "" && req.ProfilePictureURL != oldProfilePictureURL {
+		s.mediaRepo.MarkAsUnused(oldProfilePictureURL)
+		s.mediaRepo.MarkAsUsed(req.ProfilePictureURL)
 	}
 
 	return s.mapToResponse(tutor), nil

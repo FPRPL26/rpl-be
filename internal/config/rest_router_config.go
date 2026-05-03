@@ -48,7 +48,11 @@ func NewRouter(server *gin.Engine, db *gorm.DB) *gin.Engine {
 			return
 		}
 
-		fileURL := fmt.Sprintf("%s/api/static/%s", ctx.Request.Host, filename)
+		scheme := "http"
+		if ctx.Request.TLS != nil {
+			scheme = "https"
+		}
+		fileURL := fmt.Sprintf("%s://%s/api/static/%s", scheme, ctx.Request.Host, filename)
 
 		media := entity.MediaAsset{
 			URL:    fileURL,
@@ -63,7 +67,7 @@ func NewRouter(server *gin.Engine, db *gorm.DB) *gin.Engine {
 		response.NewSuccess("success upload image", gin.H{
 			"id":   media.ID,
 			"url":  fileURL,
-			"path": filename,
+			"path": fmt.Sprintf("static/%s", filename),
 		}).Send(ctx)
 	})
 

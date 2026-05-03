@@ -58,9 +58,10 @@ type (
 	}
 
 	PersonalInfo struct {
-		ID    string `json:"id"`
-		Name  string `json:"name"`
-		Email string `json:"email"`
-		Role  string `json:"role"`
+		ID      string `json:"id"`
+		Name    string `json:"name"`
+		Email   string `json:"email"`
+		Role    string `json:"role"`
+		IsTutor bool   `json:"is_tutor"`
 	}
 )

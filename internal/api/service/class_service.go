@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -35,12 +36,13 @@ type (
 		scheduleRepo    repository.ScheduleRepository
 		transactionRepo repository.ClassTransactionRepository
 		reviewRepo      repository.ReviewRepository
+		mediaRepo       repository.MediaAssetRepository
 		db              *gorm.DB
 	}
 )
 
-func NewClass(classRepo repository.ClassRepository, scheduleRepo repository.ScheduleRepository, transactionRepo repository.ClassTransactionRepository, reviewRepo repository.ReviewRepository, db *gorm.DB) ClassService {
-	return &classService{classRepo, scheduleRepo, transactionRepo, reviewRepo, db}
+func NewClass(classRepo repository.ClassRepository, scheduleRepo repository.ScheduleRepository, transactionRepo repository.ClassTransactionRepository, reviewRepo repository.ReviewRepository, mediaRepo repository.MediaAssetRepository, db *gorm.DB) ClassService {
+	return &classService{classRepo, scheduleRepo, transactionRepo, reviewRepo, mediaRepo, db}
 }
 
 func (s *classService) Create(ctx context.Context, tutorId string, req dto.CreateClassRequest) (entity.Class, error) {
@@ -61,7 +63,16 @@ func (s *classService) Create(ctx context.Context, tutorId string, req dto.Creat
 		class.ChatWA = &req.ChatWA
 	}
 
-	return s.classRepo.Create(ctx, nil, class)
+	res, err := s.classRepo.Create(ctx, nil, class)
+	if err != nil {
+		return entity.Class{}, err
+	}
+
+	if err := s.mediaRepo.MarkAsUsed(req.ThumbnailURL); err != nil {
+		return res, err
+	}
+
+	return res, nil
 }
 
 func (s *classService) GetAll(ctx context.Context, metaReq meta.Meta) ([]dto.ClassResponse, meta.Meta, error) {
@@ -279,6 +290,8 @@ func (s *classService) Update(ctx context.Context, tutorId string, classId strin
 		return dto.ClassResponse{}, myerror.New("unauthorized", 403)
 	}
 
+	oldThumbnailURL := class.ThumbnailURL
+
 	if req.Name != "" {
 		class.Name = req.Name
 	}
@@ -298,6 +311,12 @@ func (s *classService) Update(ctx context.Context, tutorId string, classId strin
 	updatedClass, err := s.classRepo.Update(ctx, nil, class)
 	if err != nil {
 		return dto.ClassResponse{}, err
+	}
+
+	fmt.Println("oldThumbnailURL", oldThumbnailURL, "newThumbnailURL", req.ThumbnailURL)
+	if req.ThumbnailURL != "" && req.ThumbnailURL != oldThumbnailURL {
+		s.mediaRepo.MarkAsUnused(oldThumbnailURL)
+		s.mediaRepo.MarkAsUsed(req.ThumbnailURL)
 	}
 
 	return dto.ClassResponse{
@@ -327,7 +346,12 @@ func (s *classService) Delete(ctx context.Context, tutorId string, classId strin
 		return myerror.New("unauthorized", 403)
 	}
 
-	return s.classRepo.Delete(ctx, nil, class)
+	if err := s.classRepo.Delete(ctx, nil, class); err != nil {
+		return err
+	}
+
+	s.mediaRepo.MarkAsUnused(class.ThumbnailURL)
+	return nil
 }
 
 func (s *classService) AddSchedules(ctx context.Context, classId string, req dto.AddSchedulesRequest) error {
