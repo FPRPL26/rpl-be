@@ -271,7 +271,6 @@ func (s *classRequestTutorApplicationService) UpdateStatus(ctx context.Context, 
 
 		application = updated
 
-		application.ClassRequest.TutorProfileID = application.TutorProfileID
 		application.ClassRequest.Status = entity.ClassRequestStatusAssigned
 		if _, err := s.classRequestRepo.Update(ctx, tx, application.ClassRequest); err != nil {
 			tx.Rollback()

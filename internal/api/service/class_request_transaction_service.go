@@ -111,10 +111,6 @@ func (s *classRequestTransactionService) Create(ctx context.Context, userID stri
 
 	tutorProfileID := application.TutorProfileID
 
-	if application.ClassRequest.TutorProfileID != uuid.Nil && application.ClassRequest.TutorProfileID != tutorProfileID {
-		return dto.ClassRequestTransactionResponse{}, myerror.New("accepted tutor does not match request record", http.StatusBadRequest)
-	}
-
 	if _, err := s.tutorProfileRepo.GetByID(ctx, tutorProfileID); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return dto.ClassRequestTransactionResponse{}, myerror.New("tutor profile not found", http.StatusNotFound)
